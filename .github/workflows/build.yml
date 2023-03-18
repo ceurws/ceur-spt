@@ -33,5 +33,5 @@ jobs:
         scripts/install
     - name: Run tests
       run: |
-        scripts/getSamples
+        scripts/getSamples --ceurws
         scripts/test
