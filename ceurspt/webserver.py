@@ -5,7 +5,7 @@ Created on 2023-03-17
 """
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, RedirectResponse
-from ceurws.ceur_ws import VolumeManager
+from ceurspt.ceurws import VolumeManager
 import dataclasses
 
 class WebServer:
