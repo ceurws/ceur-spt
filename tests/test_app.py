@@ -17,16 +17,45 @@ class Test_app(Basetest):
         vm=VolumeManager(base_path=base_path)
         self.ws = WebServer(vm)
         self.client = TestClient(self.ws.app)
+        
+    def checkResponse(self,path:str,status_code:int)->'Response':
+        """
+        check the response for the given path for the given status code
+        
+        Args:
+            path(str): the path for the request
+            status_code(int): the expected status code
+            
+        Returns:
+            Response: the response received
+        """
+        response = self.client.get(path)
+        self.assertEqual(status_code,response.status_code)
+        return response
+        
+    def test_docs(self):
+        """
+        test the documentation handling
+        """
+        response=self.checkResponse("/docs",200)
+        html=response.text
+        debug=self.debug
+        #debug=True
+        if debug:
+            print(html)
+        self.assertTrue("SwaggerUIBundle" in html)
+      
     
     def test_home(self):
         """
+        test the home url
         """
-        response = self.client.get(f"/")
+        response = self.client.get("/")
         self.assertEqual(404, response.status_code)
         debug=self.debug
         debug=True
         if debug:
-            print(response)
+            print(response.text)
     
     def test_read_volume(self):
         """

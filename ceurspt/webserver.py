@@ -51,6 +51,6 @@ class WebServer:
             Return the home 
             """
             url = "https://github.com/ceurws/ceur-spt"
-            response = RedirectResponse(url=url)
+            response = RedirectResponse(url=url,status_code=302)
             return response
 
