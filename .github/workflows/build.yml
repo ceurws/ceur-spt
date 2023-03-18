@@ -33,6 +33,6 @@ jobs:
         scripts/install
     - name: Run tests
       run: |
-# sample volumes to be tested
+      # sample volumes to be tested
         scripts/getSamples
         scripts/test
