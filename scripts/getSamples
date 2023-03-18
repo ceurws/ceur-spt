@@ -39,22 +39,36 @@ error() {
 usage() {
   echo "usage: $0 [-h|--help][--ceurws]"
   echo "  -h|--help: show this usage"
+  echo "  -p|--papers: mine paper details"
   echo "  --ceurws: force getting samples for CEURWS and exit"
 }
 
 #
-# get the data from CEUR-WS
+# volume dir
 #
-getCEURWS() {
-  color_msg $blue "getting sample data for CEUR-WS"
+# params
+#    #1: volume number
+#
+voldir() {
   cws="ceur-ws"
   if [ ! -d $cws ]
   then
     mkdir -p $cws
   fi
   cd $cws
-  volno=3262
+}
+
+#
+# get the data from CEUR-WS
+#
+# params
+#    #1: volume number
+#
+getCEURWS() {
+  local volno="$1"
+  color_msg $blue "getting sample data for CEUR-WS volume $volno"
   vol="Vol-$volno"
+  voldir
   zip=$vol.zip
   if [ ! -d $vol ]
   then
@@ -68,6 +82,44 @@ getCEURWS() {
   fi
 }
 
+#
+# cermine
+#
+# params:
+#   #1: paper.pdf to mine
+#
+cermine() {
+  local l_paper="$1"
+  b=$(basename $l_paper .pdf)
+  xml="$b.xml"
+  if [ ! -f $xml ]
+  then
+     color_msg $blue "analyzing $l_paper"
+     curl --data-binary @$l_paper \
+     --header "Content-Type: application/binary" -v \
+     http://cermine.ceon.pl/extract.do > "$xml"
+  else
+     color_msg "cermine result $xml already created"
+  fi
+}
+
+#
+# mine paper details
+#
+# params
+#    #1: volume number
+#
+mine_papers() {
+  local volno="$1"
+  voldir
+  vol="Vol-$volno"
+  cd $vol
+  for p in *.pdf
+  do
+    cermine "$p"
+  done
+}
+
 while [  "$1" != ""  ]
 do
   option=$1
@@ -76,8 +128,11 @@ do
     -h|--help)
       usage
       exit 0;;
- 	--ceurws)
-      getCEURWS
+    -p|--papers)
+      mine_papers 3262
+      ;;
+ 	  --ceurws)
+      getCEURWS 3262
       ;;
   esac
 done
