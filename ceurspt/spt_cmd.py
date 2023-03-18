@@ -13,6 +13,7 @@ import traceback
 import webbrowser
 import uvicorn
 from pathlib import Path
+from ceurspt.ceurws import VolumeManager
 
 
 class CeurSptCmd:
@@ -64,7 +65,8 @@ class CeurSptCmd:
         Args:
             args(Arguments): command line arguments
         """
-        ws = WebServer(base_path=args.basepath)
+        vm=VolumeManager(base_path=args.basepath)
+        ws = WebServer(vm)
         uvicorn.run(ws.app, host=args.host, port=args.port)
 
 

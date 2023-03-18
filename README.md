@@ -15,10 +15,10 @@ CEUR Workshop Proceedings (CEUR-WS.org)
 Free Open-Access Proceedings for Computer Science Workshops
 https://ceur-ws.org/
 ### Semantification of CEUR-WS
-http://ceur-ws-browser.bitplan.com
-http://ceur-ws.bitplan.com
+- http://ceur-ws-browser.bitplan.com
+- http://ceur-ws.bitplan.com
 
 ### Single Point of Truth
-
+- http://ceurspt.wikidata.dbis.rwth-aachen.de/docs
 
 

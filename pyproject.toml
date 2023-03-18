@@ -19,7 +19,9 @@ dependencies = [
   # https://pypi.org/project/fastapi/
   "fastapi[all]",
   # https://pypi.org/project/uvicorn/
-  "uvicorn"
+  "uvicorn",
+  # https://pypi.org/project/linkml-runtime/
+  "linkml-runtime"
 ]
 
 requires-python = ">=3.8"
