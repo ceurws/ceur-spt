@@ -17,8 +17,9 @@ readme = "README.md"
 license= "Apache-2.0"
 dependencies = [
   # https://pypi.org/project/fastapi/
-    "fastapi",
-    "uvicorn"
+  "fastapi[all]",
+  # https://pypi.org/project/uvicorn/
+  "uvicorn"
 ]
 
 requires-python = ">=3.8"
