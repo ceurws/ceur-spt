@@ -69,8 +69,7 @@ class Test_app(Basetest):
             ("","CEURVERSION=2020-0",False),
             (".html","CEURVERSION=2020-0",False)
         ]:
-            response = self.client.get(f"/Vol-3262{ext}")
-            self.assertEqual(200, response.status_code)
+            response = self.checkResponse(f"/Vol-3262{ext}",200)
             if ext==".json":
                 result=response.json()
                 if debug:

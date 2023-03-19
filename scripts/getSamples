@@ -99,8 +99,32 @@ cermine() {
      --header "Content-Type: application/binary" -v \
      http://cermine.ceon.pl/extract.do > "$xml"
   else
-     color_msg "cermine result $xml already created"
+     color_msg $green "cermine result $xml already created"
   fi
+}
+
+#
+# extract text from papers
+#
+# params
+#    #1: volume number
+#
+extract_text() {
+  local volno="$1"
+  voldir
+  vol="Vol-$volno"
+  cd $vol
+  for p in *.pdf
+  do
+    b=$(basename $p .pdf)
+    if [ ! -f $b.txt ]
+    then
+      color_msg $blue "extracting text from $p to $b.txt ..."
+      pdftotext -q $p $b.txt
+    else
+      color_msg $green "$b.txt already extracted"
+    fi
+  done
 }
 
 #
@@ -109,7 +133,7 @@ cermine() {
 # params
 #    #1: volume number
 #
-mine_papers() {
+cermine_papers() {
   local volno="$1"
   voldir
   vol="Vol-$volno"
@@ -120,6 +144,8 @@ mine_papers() {
   done
 }
 
+volno=3262
+pdir=$(pwd)
 while [  "$1" != ""  ]
 do
   option=$1
@@ -129,10 +155,24 @@ do
       usage
       exit 0;;
     -p|--papers)
-      mine_papers 3262
+      cd $pdir
+      cermine_papers $volno
       ;;
- 	  --ceurws)
-      getCEURWS 3262
+    -t|--text)
+      cd $pdir
+      extract_text $volno
+      ;;
+    --ceurws)
+      cd $pdir
+      getCEURWS $volno
+      ;;
+    -v|--volume)
+      if [ $# -lt 1 ]
+      then
+        usage
+      fi
+      volno="$1"
+      shift
       ;;
   esac
 done
