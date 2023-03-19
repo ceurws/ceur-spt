@@ -111,6 +111,19 @@ cermine() {
 #
 extract_text() {
   local volno="$1"
+  which pdftotext
+  if [ $? -ne 0 ]
+  then
+    os=`uname`
+    case $os in
+      Darwin)
+       sudo port install poppler-utils
+       ;;
+      *)
+        sudo apt-get install poppler-utils
+      ;;
+    esac
+  fi
   voldir
   vol="Vol-$volno"
   cd $vol
