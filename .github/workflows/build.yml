@@ -27,11 +27,24 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip
         scripts/install
-    - name: Run tests
+
+    - name: Cache Samples 
+      id: cache-samples
+      uses: actions/cache@v3
+      with:
+        path: ceur-ws 
+        key: ${{ runner.os }}-ceurws
+
+    - name: getSamples 
+      if: steps.cache-samples.outputs.cache-hit != 'true'
       run: |
         scripts/getSamples --ceurws -p -t
+
+    - name: Run tests
+      run: |
         scripts/test
