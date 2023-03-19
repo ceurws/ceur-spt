@@ -43,7 +43,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         """
         get the plain text content of this paper
         """
-        text=self.getContentByPostfix(".txt")
+        text=self.getContentByPostfix("-content.txt")
         return text
         
     def getPdf(self):
