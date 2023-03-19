@@ -55,7 +55,7 @@ class WebServer:
             """
             vol=self.vm.getVolume(number)
             paper=vol.getPaper(paper_number)
-            xml=paper.getContentByPostfix(".xml")
+            xml=paper.getContentByPostfix(".tei.xml")
             return Response(content=xml, media_type="application/xml")
       
         @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.cermine")
