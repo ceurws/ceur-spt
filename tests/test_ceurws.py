@@ -34,7 +34,22 @@ class Test_CEURWS(Basetest):
         vol=self.vm.getVolume(3262)
         html=vol.getHtml()
         debug=self.debug
-        debug=True
+        #debug=True
         if debug:
             print(html)
+        self.assertTrue("""<link href="/static/ceur-ws.css" rel="stylesheet" type="text/css"/>""" in html)
+            
+    def test_getText(self):
+        """
+        get the full text of a paper
+        """
+        vol=self.vm.getVolume(3262)
+        paper=vol.getPaper(1)
+        text=paper.getText()
+        #debug=self.debug
+        debug=True
+        if debug:
+            print(text)
+        self.assertTrue("Formalizing Property Constraints in Wikidata" in text)
+    
         

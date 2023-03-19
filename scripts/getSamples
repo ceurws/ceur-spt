@@ -91,7 +91,7 @@ getCEURWS() {
 cermine() {
   local l_paper="$1"
   b=$(basename $l_paper .pdf)
-  xml="$b.xml"
+  xml="$b-cermine.xml"
   if [ ! -f $xml ]
   then
      color_msg $blue "analyzing $l_paper"

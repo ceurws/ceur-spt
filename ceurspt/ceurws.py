@@ -13,12 +13,40 @@ class Paper(ceurspt.ceurws_base.Paper):
     a CEUR-WS Paper with it's behavior
     """
     
+    def getBasePath(self)->str:
+        """
+        get the base path to my files
+        """
+        volume=self.volume
+        base_path=f"{volume.vm.base_path}/Vol-{volume.number}/paper{self.paper_number}"
+        return base_path
+    
+    def getContentByPostfix(self,postfix:str)->str:
+        """
+        get the content for the given postfix
+        
+        Args:
+            postfix(str): the postfix to read
+        """
+        base_path=self.getBasePath()
+        text_path=f"{base_path}{postfix}"
+        with open(text_path, 'r') as text_file:
+            content = text_file.read()
+        return content
+    
+    def getText(self)->str:
+        """
+        get the plain text content of this paper
+        """
+        text=self.getContentByPostfix(".txt")
+        return text
+        
     def getPdf(self):
         """
         get the PDF file for this paper
         """
-        volume=self.volume
-        pdf=f"{volume.vm.base_path}/Vol-{volume.number}/paper{self.paper_number}.pdf"
+        base_path=self.getBasePath()
+        pdf=f"{base_path}.pdf"
         return pdf
 
 class Volume(ceurspt.ceurws_base.Volume):

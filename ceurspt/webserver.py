@@ -4,7 +4,7 @@ Created on 2023-03-17
 @author: wf
 """
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse,Response,RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from ceurspt.ceurws import VolumeManager
 import dataclasses
@@ -37,7 +37,36 @@ class WebServer:
             paper=vol.getPaper(paper_number)
             pdf=paper.getPdf()
             return FileResponse(pdf)
-            
+        
+        @self.app.get("/Vol-{number:int}/paper{paper_number:int}.txt")
+        async def paperText(number:int,paper_number:int):
+            """
+            get the text for the given paper
+            """
+            vol=self.vm.getVolume(number)
+            paper=vol.getPaper(paper_number)
+            text=paper.getText()
+            return PlainTextResponse(text)
+        
+        @self.app.get("/Vol-{number:int}/paper{paper_number:int}.grobid")
+        async def paperGrobidXml(number:int,paper_number:int):
+            """
+            get the grobid XML for the given paper
+            """
+            vol=self.vm.getVolume(number)
+            paper=vol.getPaper(paper_number)
+            xml=paper.getContentByPostfix(".xml")
+            return Response(content=xml, media_type="application/xml")
+      
+        @self.app.get("/Vol-{number:int}/paper{paper_number:int}.cermine")
+        async def paperCermineXml(number:int,paper_number:int):
+            """
+            get the grobid XML for the given paper
+            """
+            vol=self.vm.getVolume(number)
+            paper=vol.getPaper(paper_number)
+            xml=paper.getContentByPostfix("-cermine.xml")
+            return Response(content=xml, media_type="application/xml")
             
     
         @self.app.get("/Vol-{number:int}.json")
