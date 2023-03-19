@@ -33,17 +33,24 @@ jobs:
         python -m pip install --upgrade pip
         scripts/install
 
-    - name: Cache Samples 
+    - name: Cache Samples
       id: cache-samples
       uses: actions/cache@v3
       with:
-        path: ceur-ws 
-        key: ${{ runner.os }}-ceurws
+        path: ceur-ws
+        key: ceurws
 
-    - name: getSamples 
+    - name: getSamples
       if: steps.cache-samples.outputs.cache-hit != 'true'
       run: |
         scripts/getSamples --ceurws -p -t
+
+    - name: saveSamples
+      id: saveSamples
+      uses: actions/cache/save@v3
+      with:
+        path: ceur-ws
+        key: ceurws
 
     - name: Run tests
       run: |
