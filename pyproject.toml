@@ -21,7 +21,9 @@ dependencies = [
   # https://pypi.org/project/uvicorn/
   "uvicorn",
   # https://pypi.org/project/linkml-runtime/
-  "linkml-runtime"
+  "linkml-runtime",
+  # https://pypi.org/project/beautifulsoup4/
+  "beautifulsoup4"
 ]
 
 requires-python = ">=3.8"

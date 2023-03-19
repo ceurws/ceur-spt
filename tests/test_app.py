@@ -14,8 +14,9 @@ class Test_app(Basetest):
         Basetest.setUp(self, debug=debug, profile=profile)
         script_path=Path(__file__)
         base_path=f"{script_path.parent.parent}/ceur-ws"
+        static_directory=f"{script_path.parent.parent}/static"
         vm=VolumeManager(base_path=base_path)
-        self.ws = WebServer(vm)
+        self.ws = WebServer(vm,static_directory=static_directory)
         self.client = TestClient(self.ws.app)
         
     def checkResponse(self,path:str,status_code:int)->'Response':
@@ -65,7 +66,7 @@ class Test_app(Basetest):
         debug=self.debug
         #debug=True
         for ext,expected,equal in [
-            (".json",{'number': 3262.0, 'title':None},True),
+            (".json",{'number': 3262, 'title':None},True),
             ("","CEURVERSION=2020-0",False),
             (".html","CEURVERSION=2020-0",False)
         ]:
@@ -81,4 +82,12 @@ class Test_app(Basetest):
                 self.assertEqual(expected,result)
             else:
                 self.assertTrue(expected in result)
+                
+    def test_read_paper(self):
+        """
+        test reading the pdf for a paper
+        """
+        response = self.checkResponse(f"/Vol-3262/paper1.pdf",200)
+        self.assertEqual(2509257,response.num_bytes_downloaded)
+        pass
     
