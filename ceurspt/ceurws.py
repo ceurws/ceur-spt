@@ -18,7 +18,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         get the base path to my files
         """
         volume=self.volume
-        for sep in ["","-"]:
+        for sep in ["","-","0","-0"]:
             base_path=f"{volume.vm.base_path}/Vol-{volume.number}/paper{sep}{self.paper_number}"
             if os.path.isfile(f"{base_path}.pdf"):
                 return base_path
