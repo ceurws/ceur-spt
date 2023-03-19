@@ -87,7 +87,7 @@ class Test_app(Basetest):
         """
         test reading the pdf for a paper
         """
-        response = self.checkResponse(f"/Vol-3262/paper1.pdf",200)
+        response = self.checkResponse(f"/Vol-3262/paper-1.pdf",200)
         self.assertEqual(2509257,response.num_bytes_downloaded)
         pass
     

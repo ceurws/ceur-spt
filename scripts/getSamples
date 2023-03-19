@@ -130,12 +130,13 @@ extract_text() {
   for p in *.pdf
   do
     b=$(basename $p .pdf)
-    if [ ! -f $b.txt ]
+    txt=$b-content.txt
+    if [ ! -f $txt ]
     then
-      color_msg $blue "extracting text from $p to $b.txt ..."
-      pdftotext -q $p $b.txt
+      color_msg $blue "extracting text from $p to $txt ..."
+      pdftotext -q $p $txt
     else
-      color_msg $green "$b.txt already extracted"
+      color_msg $green "$txt already extracted"
     fi
   done
 }
