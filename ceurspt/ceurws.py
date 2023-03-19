@@ -18,8 +18,11 @@ class Paper(ceurspt.ceurws_base.Paper):
         get the base path to my files
         """
         volume=self.volume
-        base_path=f"{volume.vm.base_path}/Vol-{volume.number}/paper{self.paper_number}"
-        return base_path
+        for sep in ["","-"]:
+            base_path=f"{volume.vm.base_path}/Vol-{volume.number}/paper{sep}{self.paper_number}"
+            if os.path.isfile(f"{base_path}.pdf"):
+                return base_path
+        return None
     
     def getContentByPostfix(self,postfix:str)->str:
         """
@@ -29,6 +32,8 @@ class Paper(ceurspt.ceurws_base.Paper):
             postfix(str): the postfix to read
         """
         base_path=self.getBasePath()
+        if base_path is None:
+            return None
         text_path=f"{base_path}{postfix}"
         with open(text_path, 'r') as text_file:
             content = text_file.read()
@@ -71,7 +76,7 @@ class Volume(ceurspt.ceurws_base.Volume):
                     # .replace("google", "mysite")
                     href=ohref.replace("http://ceur-ws.org/","/")
                     href=href.replace("../ceur-ws.css","/static/ceur-ws.css")
-                    href=re.sub(r'paper([\-]?[0-9]+).pdf', fr"/Vol-{self.number}/paper\g<1>.pdf", href)
+                    href=re.sub(r'paper([\-]?[0-9]+).pdf', fr"/Vol-{self.number}/paper-\g<1>.pdf", href)
                     pass
                     a['href']=href
                 content=soup.prettify( formatter="html" )

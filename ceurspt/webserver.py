@@ -28,6 +28,7 @@ class WebServer:
         self.vm=vm
         
     
+        @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.pdf")
         @self.app.get("/Vol-{number:int}/paper{paper_number:int}.pdf")
         async def paperPdf(number:int,paper_number:int):
             """
@@ -38,7 +39,7 @@ class WebServer:
             pdf=paper.getPdf()
             return FileResponse(pdf)
         
-        @self.app.get("/Vol-{number:int}/paper{paper_number:int}.txt")
+        @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.txt")
         async def paperText(number:int,paper_number:int):
             """
             get the text for the given paper
@@ -48,7 +49,7 @@ class WebServer:
             text=paper.getText()
             return PlainTextResponse(text)
         
-        @self.app.get("/Vol-{number:int}/paper{paper_number:int}.grobid")
+        @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.grobid")
         async def paperGrobidXml(number:int,paper_number:int):
             """
             get the grobid XML for the given paper
@@ -58,7 +59,7 @@ class WebServer:
             xml=paper.getContentByPostfix(".xml")
             return Response(content=xml, media_type="application/xml")
       
-        @self.app.get("/Vol-{number:int}/paper{paper_number:int}.cermine")
+        @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.cermine")
         async def paperCermineXml(number:int,paper_number:int):
             """
             get the grobid XML for the given paper
