@@ -42,7 +42,7 @@ class Volume(ceurspt.ceurws_base.Volume):
                     ohref=a['href'] 
                     # .replace("google", "mysite")
                     href=ohref.replace("http://ceur-ws.org/","/")
-                    href=href.replace("../ceur-ws.css","/ceur-ws.css")
+                    href=href.replace("../ceur-ws.css","/static/ceur-ws.css")
                     href=re.sub(r'paper([0-9]+).pdf', fr"/Vol-{self.number}/paper\g<1>.pdf", href)
                     pass
                     a['href']=href
