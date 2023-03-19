@@ -29,7 +29,6 @@ class WebServer:
         
     
         @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.pdf")
-        @self.app.get("/Vol-{number:int}/paper{paper_number:int}.pdf")
         async def paperPdf(number:int,paper_number:int):
             """
             get the PDF for the given paper
@@ -68,7 +67,6 @@ class WebServer:
             paper=vol.getPaper(paper_number)
             xml=paper.getContentByPostfix("-cermine.xml")
             return Response(content=xml, media_type="application/xml")
-            
     
         @self.app.get("/Vol-{number:int}.json")
         async def volumeJson(number: int):
