@@ -7,6 +7,8 @@ import ceurspt.ceurws_base
 import os
 import re
 from bs4 import BeautifulSoup
+import urllib.request
+import json
 
 class Paper(ceurspt.ceurws_base.Paper):
     """
@@ -93,8 +95,29 @@ class Volume(ceurspt.ceurws_base.Volume):
         paper.paper_number=paper_number
         paper.volume=self
         return paper
+    
+class JsonCacheManager():
+    """
+    a json based cache manager
+    """
+    def __init__(self,base_url:str="http://cvb.bitplan.com"):
+        self.base_url=base_url
+        
+    def load_lod(self,lod_name:str)->list:
+        """
+        load my list of dicts
+        """
+        url=f"{self.base_url}/{lod_name}.json"
+        with urllib.request.urlopen(url) as source:
+            lod = json.load(source)
+        return lod
+    
+class PaperManager(JsonCacheManager):
+    """
+    manage all papers
+    """
 
-class VolumeManager():
+class VolumeManager(JsonCacheManager):
     """
     manage all volumes
     """
@@ -106,6 +129,10 @@ class VolumeManager():
             base_path(str): the path to my files
         """
         self.base_path=base_path
+        
+    def getVolumes(self):
+        """
+        """
         
     def getVolume(self,number:int)->Volume:
         """
