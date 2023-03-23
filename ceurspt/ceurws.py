@@ -57,17 +57,58 @@ class Paper(ceurspt.ceurws_base.Paper):
         base_path=self.getBasePath()
         pdf=f"{base_path}.pdf"
         return pdf
+    
+    def asHtml(self):
+        """
+        return an html response
+        """
+        content=f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="/static/ceur-ws.css">
+<title>{self.id} - {self.title}</title>
+</head>
+<body>
+
+<table style="border: 0; border-spacing: 0; border-collapse: collapse; width: 95%">
+<tbody><tr>
+<td style="text-align: left; vertical-align: middle">
+<a href="http://ceur-ws.org/"><div id="CEURWSLOGO"></div></a>
+</td>
+<td style="text-align: right; vertical-align: middle">
+<div style="float:left" id="CEURCCBY"></div>
+<span class="CEURVOLNR"><a href="/Vol-{self.volume.number}.html">Vol-{self.volume.number}</a></span> <br>
+<span class="CEURURN">urn:nbn:de:0074-{self.volume.number}-0</span>
+<p class="unobtrusive copyright" style="text-align: justify">Copyright &copy; {self.volume.date[:4]} for
+the individual papers by the papers' authors. 
+Copyright &copy; <span class="CEURPUBYEAR">{self.volume.date[:4]}</span> for the volume
+as a collection by its editors.
+This volume and its papers are published under the
+Creative Commons License Attribution 4.0 International
+<A HREF="https://creativecommons.org/licenses/by/4.0/">(<span class="CEURLIC">CC BY 4.0</span>)</A>.</p>
+</td>
+</tr>
+</tbody></table>
+<h1>{self.title}<h1>
+<embed src="{self.pdfUrl}" style="width:100vw;height:100vh" type="application/pdf">
+<body>
+</body>
+        """
+        return content
 
 class Volume(ceurspt.ceurws_base.Volume):
     """
     a CEUR-WS Volume with it's behavior
     """
     
-    def getHtml(self,fixLinks:bool=True)->str:
+    def getHtml(self,ext:str=".pdf",fixLinks:bool=True)->str:
         """
         get my HTML content
         
         Args:
+            ext(str): the extension to use for pdf page details
             fixLinks(bool): if True fix the links
         """
         index_path=f"{self.vol_dir}/index.html"
@@ -81,6 +122,7 @@ class Volume(ceurspt.ceurws_base.Volume):
                     href=ohref.replace("http://ceur-ws.org/","/")
                     href=href.replace("../ceur-ws.css","/static/ceur-ws.css")
                     if ".pdf" in href:
+                        href=href.replace(".pdf",ext)
                         href=f"/Vol-{self.number}/{href}"
                     pass
                     a['href']=href

@@ -49,3 +49,16 @@ class Test_CEURWS(BaseSptTest):
         self.assertTrue("Formalizing Property Constraints in Wikidata" in text)
     
         
+    def test_asHtml(self):
+        """
+        test getting html for a paper
+        """
+        paper=self.pm.getPaper(3262,"paper1")
+        html=paper.asHtml()
+        debug=self.debug
+        debug=True
+        if debug:
+            print(html)
+        self.assertTrue("Formalizing Property Constraints in Wikidata" in html)
+        
+        

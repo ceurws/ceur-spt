@@ -46,6 +46,16 @@ class WebServer:
             paper=self.getPaper(number,pdf_name)
             return dataclasses.asdict(paper)
         
+        @self.app.get("/Vol-{number:int}/{pdf_name}.html")
+        async def paperHtml(number:int,pdf_name:str):
+            """
+            get the html response for the given paper
+            """
+            paper=self.getPaper(number,pdf_name)
+            content=paper.asHtml()
+            return HTMLResponse(content=content)
+                         
+        
         @self.app.get("/Vol-{number:int}/{pdf_name}.txt")
         async def paperText(number:int,pdf_name:str):
             """
@@ -64,7 +74,7 @@ class WebServer:
             xml=paper.getContentByPostfix(".tei.xml")
             return Response(content=xml, media_type="application/xml")
       
-        @self.app.get("/Vol-{number:int}/{pdf_name.cermine")
+        @self.app.get("/Vol-{number:int}/{pdf_name}.cermine")
         async def paperCermineXml(number:int,pdf_name:str):
             """
             get the grobid XML for the given paper
@@ -85,17 +95,21 @@ class WebServer:
                 return { "error": f"unknown volume number {number}"}
             
         @self.app.get("/Vol-{number:int}")
-        @self.app.get("/Vol-{number:int}.html")
-        async def volumeHtml(number:int):
+        async def volumeHtmlWithPdf(number:int):
             """
             get html Response for the given volume by number
+            displaying pdfs directly
             """
-            vol=self.getVolume(number)
-            if vol:
-                content=vol.getHtml(fixLinks=True)
-                return HTMLResponse(content=content, status_code=200)
-            else:
-                return HTMLResponse(content=f"unknown volume number {number}",status_code=404)
+            return self.volumeHtml(number,ext=".pdf")
+            
+        @self.app.get("/Vol-{number:int}.html")
+        async def volumeHtmlWithHtml(number:int):
+            """
+            get html Response for the given volume by number
+            displaying pdfs embedded in html
+            """
+            return self.volumeHtml(number,ext=".html")
+           
             
         @self.app.get("/")
         async def home():
@@ -105,6 +119,17 @@ class WebServer:
             url = "https://github.com/ceurws/ceur-spt"
             response = RedirectResponse(url=url,status_code=302)
             return response
+        
+    def volumeHtml(self,number:int,ext:str=".pdf"):
+            """
+            get html Response for the given volume by number
+            """
+            vol=self.getVolume(number)
+            if vol:
+                content=vol.getHtml(ext=ext,fixLinks=True)
+                return HTMLResponse(content=content, status_code=200)
+            else:
+                return HTMLResponse(content=f"unknown volume number {number}",status_code=404)
         
     def getVolume(self,number:int)->Volume:
         """
