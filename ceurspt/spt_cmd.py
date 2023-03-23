@@ -13,7 +13,7 @@ import traceback
 import webbrowser
 import uvicorn
 from pathlib import Path
-from ceurspt.ceurws import VolumeManager
+from ceurspt.ceurws import VolumeManager, PaperManager
 
 
 class CeurSptCmd:
@@ -66,9 +66,11 @@ class CeurSptCmd:
             args(Arguments): command line arguments
         """
         vm=VolumeManager(base_path=args.basepath)
+        vm.getVolumes()
+        pm=PaperManager()
+        pm.getPapers()
         ws = WebServer(vm)
         uvicorn.run(ws.app, host=args.host, port=args.port)
-
 
 def main(argv=None):  # IGNORE:C0111
     """main program."""

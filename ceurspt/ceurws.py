@@ -4,11 +4,13 @@ Created on 2023-03-18
 @author: wf
 '''
 import ceurspt.ceurws_base
+from ceurspt.ceurws_base import URI
 import os
 import re
 from bs4 import BeautifulSoup
 import urllib.request
 import json
+from pathlib import Path
 
 class Paper(ceurspt.ceurws_base.Paper):
     """
@@ -103,19 +105,35 @@ class JsonCacheManager():
     def __init__(self,base_url:str="http://cvb.bitplan.com"):
         self.base_url=base_url
         
+    def json_path(self,lod_name:str):
+        root_path=f"{Path.home()}/.ceurws"
+        os.makedirs(root_path, exist_ok=True)
+        json_path=f"{root_path}/{lod_name}.json"
+        return  json_path
+        
     def load_lod(self,lod_name:str)->list:
         """
         load my list of dicts
         """
-        url=f"{self.base_url}/{lod_name}.json"
-        with urllib.request.urlopen(url) as source:
-            lod = json.load(source)
+        json_path=self.json_path(lod_name)
+        if os.path.isfile(json_path):
+            with open(json_path) as json_file:
+                lod = json.load(json_file)
+        else:
+            url=f"{self.base_url}/{lod_name}.json"
+            with urllib.request.urlopen(url) as source:
+                lod = json.load(source)
         return lod
     
-class PaperManager(JsonCacheManager):
-    """
-    manage all papers
-    """
+    def store(self,lod_name:str,lod:list):
+        """
+        store my list of dicts
+        """
+        with open(self.json_path(lod_name), 'w') as json_file:
+            json.dump(lod, json_file)
+    
+
+            pass
 
 class VolumeManager(JsonCacheManager):
     """
@@ -132,7 +150,15 @@ class VolumeManager(JsonCacheManager):
         
     def getVolumes(self):
         """
+        get my volumes
         """
+        volume_lod=self.load_lod("volumes")
+        self.volumes_by_number={}
+        for volume_record in volume_lod:
+            vol_number=volume_record["number"]
+            title=volume_record["title"]
+            volume=Volume(number=vol_number,title=title)
+            self.volumes_by_number[vol_number]=volume
         
     def getVolume(self,number:int)->Volume:
         """
@@ -153,3 +179,28 @@ class VolumeManager(JsonCacheManager):
             return vol
         else:
             return None
+        
+class PaperManager(JsonCacheManager):
+    """
+    manage all papers
+    """
+    
+    def getPapers(self,vm:VolumeManager):
+        """
+        get all papers
+        """
+        paper_lod=self.load_lod("papers")
+        self.papers_by_id={}
+        for paper_record in paper_lod:
+            pdf_name=paper_record["pdf_name"]
+            volume_number=paper_record["vol_number"]
+            volume=vm.volumes_by_number[volume_number]
+            pdf_url=f"https://ceur-ws.org/Vol-{volume_number}/{pdf_name}"
+            paper=Paper(
+                id=paper_record["id"],
+                title=paper_record["title"],
+                authors=paper_record["authors"],
+                pdfUrl=pdf_url,
+                volume=volume
+            )
+            self.papers_by_id[paper_record["id"]]=paper
