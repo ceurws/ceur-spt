@@ -167,6 +167,7 @@ class VolumeManager(JsonCacheManager):
             acronym=volume_record["acronym"]
             volume=Volume(number=vol_number,title=title,date=pubDate,acronym=acronym)
             volume.vm=self
+            volume.number=int(volume.number)
             vol_dir=f"{self.base_path}/Vol-{vol_number}"
             if os.path.isdir(vol_dir):
                 volume.vol_dir=vol_dir
