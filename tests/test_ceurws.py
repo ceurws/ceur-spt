@@ -4,19 +4,16 @@ Created on 2023-03-18
 @author: wf
 '''
 from ceurspt.ceurws import Volume,VolumeManager
-from tests.basetest import Basetest
+from tests.base_spt_test import BaseSptTest
 from pathlib import Path
 
-class Test_CEURWS(Basetest):
+class Test_CEURWS(BaseSptTest):
     """
     Test the ceur-ws concepts
     """
     
     def setUp(self, debug=False, profile=True):
-        Basetest.setUp(self, debug=debug, profile=profile)
-        script_path=Path(__file__)
-        base_path=f"{script_path.parent.parent}/ceur-ws"
-        self.vm=VolumeManager(base_path=base_path)
+        BaseSptTest.setUp(self, debug=debug, profile=profile)
     
     def test_volume(self):
         """
@@ -43,11 +40,10 @@ class Test_CEURWS(Basetest):
         """
         get the full text of a paper
         """
-        vol=self.vm.getVolume(3262)
-        paper=vol.getPaper(1)
+        paper=self.pm.getPaper(3262,"paper1")
         text=paper.getText()
-        #debug=self.debug
-        debug=True
+        debug=self.debug
+        #debug=True
         if debug:
             print(text)
         self.assertTrue("Formalizing Property Constraints in Wikidata" in text)

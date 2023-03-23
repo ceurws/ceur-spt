@@ -4,9 +4,8 @@ Created on 2023-03-18
 @author: wf
 '''
 import ceurspt.ceurws_base
-from ceurspt.ceurws_base import URI
+from datetime import datetime
 import os
-import re
 from bs4 import BeautifulSoup
 import urllib.request
 import json
@@ -21,9 +20,10 @@ class Paper(ceurspt.ceurws_base.Paper):
         """
         get the base path to my files
         """
-        volume=self.volume
-        for sep in ["","-","0","-0"]:
-            base_path=f"{volume.vm.base_path}/Vol-{volume.number}/paper{sep}{self.paper_number}"
+        if self.pdfUrl:
+            base_path=self.pdfUrl.replace("https://ceur-ws.org/","")
+            base_path=base_path.replace(".pdf","")
+            base_path=f"{self.volume.vm.base_path}/{base_path}"
             if os.path.isfile(f"{base_path}.pdf"):
                 return base_path
         return None
@@ -80,29 +80,23 @@ class Volume(ceurspt.ceurws_base.Volume):
                     # .replace("google", "mysite")
                     href=ohref.replace("http://ceur-ws.org/","/")
                     href=href.replace("../ceur-ws.css","/static/ceur-ws.css")
-                    href=re.sub(r'paper[\-]?([0-9]+).pdf', fr"/Vol-{self.number}/paper-\g<1>.pdf", href)
+                    if ".pdf" in href:
+                        href=f"/Vol-{self.number}/{href}"
                     pass
                     a['href']=href
                 content=soup.prettify( formatter="html" )
             return content
-        
-    def getPaper(self,paper_number:int):
-        """
-        get the paper with the given number
-        
-        Args:
-            paper_number(int): the number of the paper
-        """
-        paper=Paper()
-        paper.paper_number=paper_number
-        paper.volume=self
-        return paper
     
 class JsonCacheManager():
     """
     a json based cache manager
     """
     def __init__(self,base_url:str="http://cvb.bitplan.com"):
+        """
+        constructor
+        
+        base_url(str): the base url to use for the json provider
+        """
         self.base_url=base_url
         
     def json_path(self,lod_name:str):
@@ -139,14 +133,22 @@ class VolumeManager(JsonCacheManager):
     """
     manage all volumes
     """
-    def __init__(self,base_path:str):
+    def __init__(self,base_path:str,base_url=str):
         """
         initialize me with the given base_path
     
         Args:
             base_path(str): the path to my files
+            base_url(str): the url of the RESTFul metadata service
         """
+        JsonCacheManager.__init__(self,base_url=base_url)
         self.base_path=base_path
+        
+    def getVolume(self,number:int):
+        if number in self.volumes_by_number:
+            return self.volumes_by_number[number]
+        else:
+            return None
         
     def getVolumes(self):
         """
@@ -157,33 +159,52 @@ class VolumeManager(JsonCacheManager):
         for volume_record in volume_lod:
             vol_number=volume_record["number"]
             title=volume_record["title"]
-            volume=Volume(number=vol_number,title=title)
+            pubDate_str=volume_record["pubDate"]
+            if pubDate_str:
+                pubDate=datetime.fromisoformat(pubDate_str).date()
+            else:
+                pubDate=None
+            acronym=volume_record["acronym"]
+            volume=Volume(number=vol_number,title=title,date=pubDate,acronym=acronym)
+            volume.vm=self
+            vol_dir=f"{self.base_path}/Vol-{vol_number}"
+            if os.path.isdir(vol_dir):
+                volume.vol_dir=vol_dir
+            else:
+                volume.vol_dir=None
             self.volumes_by_number[vol_number]=volume
-        
-    def getVolume(self,number:int)->Volume:
-        """
-        get the volume with the given number
-        
-        Args:
-            number(int): the volume to get
-            
-        Returns:
-            Volume: the volume
-        """       
-        vol_dir=f"{self.base_path}/Vol-{number}"
-        if os.path.isdir(vol_dir):
-            vol=Volume(number=number)
-            vol.number=int(vol.number)
-            vol.vm=self
-            vol.vol_dir=vol_dir
-            return vol
-        else:
-            return None
         
 class PaperManager(JsonCacheManager):
     """
     manage all papers
     """
+    
+    def __init__(self,base_url:str):
+        """
+        constructor
+        
+        Args:
+            base_url(str): the url of the RESTFul metadata service
+        """
+        JsonCacheManager.__init__(self, base_url)
+        
+    def getPaper(self,number:int,pdf_name:str):
+        """
+        get the paper with the given number and pdf name
+    
+        Args:
+            number(int): the number of the volume the paper is part of
+            pdf_name(str): the pdf name of the paper
+            exceptionOnFail(bool): if True raise an exception on failure
+        
+        Returns:
+            Paper: the paper or None if the paper is not found
+        """
+        pdf_path=f"Vol-{number}/{pdf_name}.pdf"
+        paper=None
+        if pdf_path in self.papers_by_path:
+            paper=self.papers_by_path[pdf_path]
+        return paper
     
     def getPapers(self,vm:VolumeManager):
         """
@@ -191,16 +212,23 @@ class PaperManager(JsonCacheManager):
         """
         paper_lod=self.load_lod("papers")
         self.papers_by_id={}
+        self.papers_by_path={}
         for paper_record in paper_lod:
             pdf_name=paper_record["pdf_name"]
             volume_number=paper_record["vol_number"]
             volume=vm.volumes_by_number[volume_number]
-            pdf_url=f"https://ceur-ws.org/Vol-{volume_number}/{pdf_name}"
-            paper=Paper(
-                id=paper_record["id"],
-                title=paper_record["title"],
-                authors=paper_record["authors"],
-                pdfUrl=pdf_url,
-                volume=volume
-            )
-            self.papers_by_id[paper_record["id"]]=paper
+            #pdf_url=f"https://ceur-ws.org/Vol-{volume_number}/{pdf_name}"
+            pdf_path=f"Vol-{volume_number}/{pdf_name}"
+            pdf_url=f"https://ceur-ws.org/{pdf_path}"
+            try:
+                paper=Paper(
+                    id=paper_record["id"],
+                    title=paper_record["title"],
+                    #authors=paper_record["authors"],
+                    pdfUrl=pdf_url,
+                    volume=volume
+                )
+                self.papers_by_id[paper_record["id"]]=paper
+                self.papers_by_path[pdf_path]=paper
+            except Exception as ex:
+                print(f"constructor for Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")

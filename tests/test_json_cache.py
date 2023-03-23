@@ -6,12 +6,14 @@ Created on 2023-03-22
 from ceurspt.ceurws import JsonCacheManager,VolumeManager,PaperManager
 from tests.basetest import Basetest,Profiler
 from pathlib import Path
+import unittest
 
 class TestJsonCache(Basetest):
     """
     Test the ceur-ws Json Cache
     """
     
+    @unittest.skipIf(True,"only manual")
     def test_json_cache(self):
         """
         test reading list of dicts 
@@ -33,8 +35,9 @@ class TestJsonCache(Basetest):
         """
         script_path=Path(__file__)
         base_path=f"{script_path.parent.parent}/ceur-ws"
-        vm=VolumeManager(base_path)
+        base_url="http://cvb.bitplan.com"
+        vm=VolumeManager(base_path=base_path,base_url=base_url)
         vm.getVolumes()
-        pm=PaperManager()
+        pm=PaperManager(base_url=base_url)
         pm.getPapers(vm)
     

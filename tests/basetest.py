@@ -2,7 +2,6 @@ from unittest import TestCase
 import time
 import getpass
 
-
 class Basetest(TestCase):
     '''
     base test case

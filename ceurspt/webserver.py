@@ -3,10 +3,10 @@ Created on 2023-03-17
 
 @author: wf
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse,Response,RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from ceurspt.ceurws import VolumeManager
+from ceurspt.ceurws import Volume,VolumeManager, Paper,PaperManager
 import dataclasses
 
 class WebServer:
@@ -14,57 +14,62 @@ class WebServer:
     the webserver
     """
 
-    def __init__(self,vm:VolumeManager,static_directory:str="static"):
+    def __init__(self,vm:VolumeManager,pm:PaperManager,static_directory:str="static"):
         """
         constructor
         
         Args:
             vm(VolumeManager): the volume manager to use
+            pm(PaperManager): the paper manager to use
             static_directory(str): the directory for static html files to use
         """
         self.app = FastAPI()
         #https://fastapi.tiangolo.com/tutorial/static-files/
         self.app.mount("/static", StaticFiles(directory=static_directory), name="static")
         self.vm=vm
-        
+        self.pm=pm
     
-        @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.pdf")
-        async def paperPdf(number:int,paper_number:int):
+        @self.app.get("/Vol-{number:int}/{pdf_name:str}.pdf")
+        async def paperPdf(number:int,pdf_name:str):
             """
             get the PDF for the given paper
             """
-            vol=self.vm.getVolume(number)
-            paper=vol.getPaper(paper_number)
+            paper=self.getPaper(number,pdf_name)
             pdf=paper.getPdf()
             return FileResponse(pdf)
         
-        @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.txt")
-        async def paperText(number:int,paper_number:int):
+        @self.app.get("/Vol-{number:int}/{pdf_name}.json")
+        async def paperJson(number:int,pdf_name:str):
+            """
+            get the json response for the given paper
+            """
+            paper=self.getPaper(number,pdf_name)
+            return dataclasses.asdict(paper)
+        
+        @self.app.get("/Vol-{number:int}/{pdf_name}.txt")
+        async def paperText(number:int,pdf_name:str):
             """
             get the text for the given paper
             """
-            vol=self.vm.getVolume(number)
-            paper=vol.getPaper(paper_number)
+            paper=self.getPaper(number,pdf_name)
             text=paper.getText()
             return PlainTextResponse(text)
         
-        @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.grobid")
-        async def paperGrobidXml(number:int,paper_number:int):
+        @self.app.get("/Vol-{number:int}/{pdf_name}.grobid")
+        async def paperGrobidXml(number:int,pdf_name:str):
             """
             get the grobid XML for the given paper
             """
-            vol=self.vm.getVolume(number)
-            paper=vol.getPaper(paper_number)
+            paper=self.getPaper(number,pdf_name)
             xml=paper.getContentByPostfix(".tei.xml")
             return Response(content=xml, media_type="application/xml")
       
-        @self.app.get("/Vol-{number:int}/paper-{paper_number:int}.cermine")
-        async def paperCermineXml(number:int,paper_number:int):
+        @self.app.get("/Vol-{number:int}/{pdf_name.cermine")
+        async def paperCermineXml(number:int,pdf_name:str):
             """
             get the grobid XML for the given paper
             """
-            vol=self.vm.getVolume(number)
-            paper=vol.getPaper(paper_number)
+            paper=self.getPaper(number,pdf_name)
             xml=paper.getContentByPostfix(".cermine.xml")
             return Response(content=xml, media_type="application/xml")
     
@@ -73,8 +78,8 @@ class WebServer:
             """
             Get metadata of volume by given id
             """
-            vol=self.vm.getVolume(number)
-            if vol:
+            if number in self.vm.volumes_by_number:
+                vol=self.vm.volumes_by_number[number]
                 return dataclasses.asdict(vol)
             else:
                 return { "error": f"unknown volume number {number}"}
@@ -85,7 +90,7 @@ class WebServer:
             """
             get html Response for the given volume by number
             """
-            vol=self.vm.getVolume(number)
+            vol=self.getVolume(number)
             if vol:
                 content=vol.getHtml(fixLinks=True)
                 return HTMLResponse(content=content, status_code=200)
@@ -100,4 +105,34 @@ class WebServer:
             url = "https://github.com/ceurws/ceur-spt"
             response = RedirectResponse(url=url,status_code=302)
             return response
+        
+    def getVolume(self,number:int)->Volume:
+        """
+        get the volume for the given number
+        
+        Args:
+            number(int): the number of the volume to fetch
+            
+        Returns:
+            Volume: the volume or None if the volume number is not known
+        """
+        vol=self.vm.getVolume(number)
+        return vol
+            
+    def getPaper(self,number:int,pdf_name:str,exceptionOnFail:bool=True)->Paper:
+        """
+        get the paper for the given volume number and pdf_name
+        
+        Args:
+            number(int): the number of the volume the paper is part of
+            pdf_name(str): the pdf name of the paper
+            exceptionOnFail(bool): if True raise an exception on failure
+        
+        Returns:
+            Paper: the paper or None if the paper is not found
+        """
+        paper=self.pm.getPaper(number, pdf_name)
+        if paper is None and exceptionOnFail:
+            raise HTTPException(status_code=404, detail=f"paper Vol-{number}/{pdf_name}.pdf not found")    
+        return paper
 

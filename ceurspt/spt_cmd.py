@@ -15,7 +15,6 @@ import uvicorn
 from pathlib import Path
 from ceurspt.ceurws import VolumeManager, PaperManager
 
-
 class CeurSptCmd:
     """
     command line interface for CEUR Single Point of Truth
@@ -34,9 +33,11 @@ class CeurSptCmd:
         """
         script_path=Path(__file__)
         base_path=f"{script_path.parent.parent}/ceur-ws"
+        base_url="http://cvb.bitplan.com"
         parser = ArgumentParser(description=description, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-a", "--about", help="show about info [default: %(default)s]", action="store_true")
         parser.add_argument("-b","--basepath",help="the base path to the ceur-ws volumes [default: %(default)s]",default=base_path)
+        parser.add_argument("-bu","--baseurl",help="the base url to use for the RESTFul metadata service [default: %(default)s]",default=base_url)
         parser.add_argument("-d", "--debug", dest="debug", action="store_true",
                             help="show debug info [default: %(default)s]")
         parser.add_argument("--host", default=self.get_default_host(),
@@ -65,11 +66,11 @@ class CeurSptCmd:
         Args:
             args(Arguments): command line arguments
         """
-        vm=VolumeManager(base_path=args.basepath)
+        vm=VolumeManager(base_path=args.basepath,base_url=args.baseurl)
         vm.getVolumes()
-        pm=PaperManager()
-        pm.getPapers()
-        ws = WebServer(vm)
+        pm=PaperManager(base_url=args.baseurl)
+        pm.getPapers(vm)
+        ws = WebServer(vm,pm)
         uvicorn.run(ws.app, host=args.host, port=args.port)
 
 def main(argv=None):  # IGNORE:C0111

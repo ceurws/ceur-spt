@@ -1,22 +1,17 @@
 from fastapi.testclient import TestClient
-from tests.basetest import Basetest
+from tests.base_spt_test import BaseSptTest
 from ceurspt.webserver import WebServer
-from pathlib import Path
 import json
-from ceurspt.ceurws import VolumeManager
 
-class Test_app(Basetest):
+class Test_app(BaseSptTest):
     """
     Test the application
     """
     
     def setUp(self, debug=False, profile=True):
-        Basetest.setUp(self, debug=debug, profile=profile)
-        script_path=Path(__file__)
-        base_path=f"{script_path.parent.parent}/ceur-ws"
-        static_directory=f"{script_path.parent.parent}/static"
-        vm=VolumeManager(base_path=base_path)
-        self.ws = WebServer(vm,static_directory=static_directory)
+        BaseSptTest.setUp(self, debug=debug, profile=profile)
+        static_directory=f"{self.script_path.parent.parent}/static"
+        self.ws = WebServer(self.vm,self.pm,static_directory=static_directory)
         self.client = TestClient(self.ws.app)
         
     def checkResponse(self,path:str,status_code:int)->'Response':
@@ -65,8 +60,8 @@ class Test_app(Basetest):
        
         debug=self.debug
         #debug=True
-        for ext,expected,equal in [
-            (".json",{'number': 3262, 'title':None},True),
+        for ext,expected,check_json in [
+            (".json",{'number': 3262, "acronym": "Wikidata 2022", "title": "Proceedings of the 3rd Wikidata Workshop 2022"},True),
             ("","CEURVERSION=2020-0",False),
             (".html","CEURVERSION=2020-0",False)
         ]:
@@ -78,8 +73,10 @@ class Test_app(Basetest):
             else:
                 result=response.text
                 pass
-            if equal:
-                self.assertEqual(expected,result)
+            if check_json:
+                for key,value in expected.items():
+                    self.assertTrue(key in result)
+                    self.assertEqual(value,result[key])
             else:
                 self.assertTrue(expected in result)
                 
@@ -87,7 +84,7 @@ class Test_app(Basetest):
         """
         test reading the pdf for a paper
         """
-        response = self.checkResponse(f"/Vol-3262/paper-1.pdf",200)
+        response = self.checkResponse(f"/Vol-3262/paper1.pdf",200)
         self.assertEqual(2509257,response.num_bytes_downloaded)
         pass
     
