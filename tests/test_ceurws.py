@@ -75,7 +75,9 @@ class Test_CEURWS(BaseSptTest):
         """
         paper=self.pm.getPaper(3262,"paper2")
         prev_paper=paper.prev()
+        self.assertEqual(1,prev_paper.paper_index)
         next_paper=paper.next()
+        self.assertEqual(2,next_paper.paper_index)
         html=paper.asHtml()
         debug=self.debug
         debug=True
@@ -83,4 +85,13 @@ class Test_CEURWS(BaseSptTest):
             print(html)
         self.assertTrue("Towards improving Wikidata reuse with emerging patterns" in html)
         
+    def test_paper_as_merged_json(self):
+        """
+        test getting merged json for a paper
+        """
+        paper=self.pm.getPaper(3262, "paper1")
+        paper_dict=paper.getMergedDict()
+        debug=True
+        if debug:
+            print(json.dumps(paper_dict,indent=2))
         

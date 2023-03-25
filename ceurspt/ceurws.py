@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import urllib.request
 import json
 from pathlib import Path
+import dataclasses
 
 class Paper(ceurspt.ceurws_base.Paper):
     """
@@ -58,6 +59,19 @@ class Paper(ceurspt.ceurws_base.Paper):
         pdf=f"{base_path}.pdf"
         return pdf
     
+    def getMergedDict(self)->str:
+        """
+        get the merged dict for this paper
+        """
+        my_dict=dataclasses.asdict(self)
+        pdf_name=self.pdfUrl.replace("https://ceur-ws.org/","")
+        if pdf_name in self.pm.paper_records_by_path:
+            pdf_record=self.pm.paper_records_by_path[pdf_name]
+            for key,value in pdf_record.items():
+                my_dict[f"cvb_{key}"]=value
+        pass
+        return my_dict
+    
     def prev(self)->'Paper':
         """
         get the previous paper in this volume
@@ -71,6 +85,13 @@ class Paper(ceurspt.ceurws_base.Paper):
         Args:
             inc(int): the increment +1 = next, -1 = prev
         """
+        vol=self.volume
+        paper=None
+        if vol:
+            next_index=self.paper_index+inc
+            if next_index>=0 and next_index <len(vol.papers):
+                paper=vol.papers[next_index]
+        return paper
     
     def asHtml(self):
         """
@@ -118,6 +139,10 @@ class Volume(ceurspt.ceurws_base.Volume):
     """
     a CEUR-WS Volume with it's behavior
     """
+    def __init__(self,**kwargs):
+        ceurspt.ceurws_base.Volume.__init__(self,**kwargs)
+        self.papers=[]
+        
     @classmethod
     def volLinkParts(cls,number:int,inc:int=0):
         """
@@ -173,6 +198,14 @@ class Volume(ceurspt.ceurws_base.Volume):
         link.string=text
         return link
     
+    def addPaper(self,paper:'Paper'):
+        """
+        add the given paper
+        """
+        # @TODO fixme to use LinkML generated code
+        self.papers.append(paper)
+        paper.paper_index=len(self.papers)-1
+    
     def getHtml(self,ext:str=".pdf",fixLinks:bool=True)->str:
         """
         get my HTML content
@@ -219,7 +252,16 @@ class JsonCacheManager():
         """
         self.base_url=base_url
         
-    def json_path(self,lod_name:str):
+    def json_path(self,lod_name:str)->str:
+        """
+        get the json pasth for the given list of dicts name
+        
+        Args:
+            lod_name(str): the name of the list of dicts cache to read
+            
+        Returns:
+            str: the path to the list of dict cache
+        """
         root_path=f"{Path.home()}/.ceurws"
         os.makedirs(root_path, exist_ok=True)
         json_path=f"{root_path}/{lod_name}.json"
@@ -228,6 +270,12 @@ class JsonCacheManager():
     def load_lod(self,lod_name:str)->list:
         """
         load my list of dicts
+        
+        Args:
+            lod_name(str): the name of the list of dicts cache to read
+            
+        Returns:
+            list: the list of dicts
         """
         json_path=self.json_path(lod_name)
         if os.path.isfile(json_path):
@@ -242,6 +290,10 @@ class JsonCacheManager():
     def store(self,lod_name:str,lod:list):
         """
         store my list of dicts
+        
+        Args:
+            lod_name(str): the name of the list of dicts cache to write
+            lod(list): the list of dicts to write
         """
         with open(self.json_path(lod_name), 'w') as json_file:
             json.dump(lod, json_file)
@@ -346,6 +398,7 @@ class PaperManager(JsonCacheManager):
         paper=None
         if pdf_path in self.papers_by_path:
             paper=self.papers_by_path[pdf_path]
+            paper.pm=self
         return paper
     
     def getPapers(self,vm:VolumeManager):
@@ -354,11 +407,12 @@ class PaperManager(JsonCacheManager):
         """
         paper_lod=self.load_lod("papers")
         self.papers_by_id={}
+        self.paper_records_by_path={}
         self.papers_by_path={}
         for paper_record in paper_lod:
             pdf_name=paper_record["pdf_name"]
             volume_number=paper_record["vol_number"]
-            volume=vm.volumes_by_number[volume_number]
+            volume=vm.getVolume(volume_number)
             #pdf_url=f"https://ceur-ws.org/Vol-{volume_number}/{pdf_name}"
             pdf_path=f"Vol-{volume_number}/{pdf_name}"
             pdf_url=f"https://ceur-ws.org/{pdf_path}"
@@ -370,8 +424,11 @@ class PaperManager(JsonCacheManager):
                     pdfUrl=pdf_url,
                     volume=volume
                 )
+                if volume:
+                    volume.addPaper(paper)
                 self.papers_by_id[paper_record["id"]]=paper
                 self.papers_by_path[pdf_path]=paper
+                self.paper_records_by_path[pdf_path]=paper_record
             except Exception as ex:
-                print(f"constructor for Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")
+                print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")
         

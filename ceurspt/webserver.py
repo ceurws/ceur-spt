@@ -7,7 +7,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse,Response,RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from ceurspt.ceurws import Volume,VolumeManager, Paper,PaperManager
-import dataclasses
 
 class WebServer:
     """
@@ -44,7 +43,8 @@ class WebServer:
             get the json response for the given paper
             """
             paper=self.getPaper(number,pdf_name)
-            return dataclasses.asdict(paper)
+            paper_dict=paper.mergedDict()
+            return paper_dict
         
         @self.app.get("/Vol-{number:int}/{pdf_name}.html")
         async def paperHtml(number:int,pdf_name:str):
@@ -54,7 +54,6 @@ class WebServer:
             paper=self.getPaper(number,pdf_name)
             content=paper.asHtml()
             return HTMLResponse(content=content)
-                         
         
         @self.app.get("/Vol-{number:int}/{pdf_name}.txt")
         async def paperText(number:int,pdf_name:str):
@@ -109,7 +108,6 @@ class WebServer:
             displaying pdfs embedded in html
             """
             return self.volumeHtml(number,ext=".html")
-           
             
         @self.app.get("/")
         async def home():
