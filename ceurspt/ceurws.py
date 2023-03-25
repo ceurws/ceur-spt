@@ -72,6 +72,40 @@ class Paper(ceurspt.ceurws_base.Paper):
         pass
         return my_dict
     
+    def paperLinkParts(self:int,inc:int=0):
+        """
+        a relative paper link
+        """
+        if inc>0:
+            presymbol="⫸"
+            postsymbol="" 
+            paper=self.next()
+        elif inc<0:
+            presymbol=""
+            postsymbol="⫷"
+            paper=self.prev()
+        else:
+            presymbol=""
+            postsymbol=""
+            paper=self
+        href=None
+        text=None
+        if paper:
+            href=f"/{paper.id}.html"
+            text=f"{presymbol}{paper.id}{postsymbol}"
+        return href,text
+    
+    def paperScrollLinks(self)->str:
+        """
+        get the paper scroll links
+        """
+        scroll_links=""
+        for inc in [-1,0,1]:
+            href,text=self.paperLinkParts(inc)
+            if href:
+                scroll_links+=f"""<a href="{href}">{text}</a>"""
+        return scroll_links
+    
     def prev(self)->'Paper':
         """
         get the previous paper in this volume
@@ -106,7 +140,6 @@ class Paper(ceurspt.ceurws_base.Paper):
 <title>{self.id} - {self.title}</title>
 </head>
 <body>
-
 <table style="border: 0; border-spacing: 0; border-collapse: collapse; width: 95%">
 <tbody><tr>
 <td style="text-align: left; vertical-align: middle">
@@ -128,6 +161,9 @@ Creative Commons License Attribution 4.0 International
 </td>
 </tr>
 </tbody></table>
+<hr/>
+{self.paperScrollLinks()}
+<hr/>
 <h1>{self.title}<h1>
 <embed src="{self.pdfUrl}" style="width:100vw;height:100vh" type="application/pdf">
 <body>
@@ -366,6 +402,9 @@ class VolumeManager(JsonCacheManager):
             volume_record=self.volume_records_by_number[number]
             for key,value in proc_record.items():
                 volume_record[f"wd_{key}"]=value
+            volume.wikidataid=volume_record["wd_item"]
+            if volume.wikidataid:
+                volume.wikidataid=volume.wikidataid.replace("https://www.wikidata.org/wiki/","")
             pass
         
 class PaperManager(JsonCacheManager):

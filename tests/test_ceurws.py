@@ -77,13 +77,15 @@ class Test_CEURWS(BaseSptTest):
         prev_paper=paper.prev()
         self.assertEqual(1,prev_paper.paper_index)
         next_paper=paper.next()
-        self.assertEqual(2,next_paper.paper_index)
+        self.assertEqual(3,next_paper.paper_index)
         html=paper.asHtml()
         debug=self.debug
-        debug=True
+        #debug=True
         if debug:
             print(html)
+        scroll_link="""<a href="/Vol-3262/paper1.html">Vol-3262/paper1⫷</a><a href="/Vol-3262/paper2.html">Vol-3262/paper2</a><a href="/Vol-3262/paper3.html">⫸Vol-3262/paper3</a>"""
         self.assertTrue("Towards improving Wikidata reuse with emerging patterns" in html)
+        self.assertTrue(scroll_link in html)
         
     def test_paper_as_merged_json(self):
         """
