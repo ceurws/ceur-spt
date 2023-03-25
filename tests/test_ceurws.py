@@ -53,7 +53,9 @@ class Test_CEURWS(BaseSptTest):
         """
         test getting html for a paper
         """
-        paper=self.pm.getPaper(3262,"paper1")
+        paper=self.pm.getPaper(3262,"paper2")
+        prev_paper=paper.prev()
+        next_paper=paper.next()
         html=paper.asHtml()
         debug=self.debug
         debug=True

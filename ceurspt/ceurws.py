@@ -58,10 +58,42 @@ class Paper(ceurspt.ceurws_base.Paper):
         pdf=f"{base_path}.pdf"
         return pdf
     
+    def prev(self)->'Paper':
+        """
+        get the previous paper in this volume
+        """
+        return self.next(-1)
+    
+    def next(self,inc:int=1)->'Paper':
+        """
+        get the next paper in this volume with the given increment
+        
+        Args:
+            inc(int): the increment +1 = next, -1 = prev
+        """
+        
+    def volLink(self,number:int,inc:int=0):
+        if inc>0:
+            presymbol="⫸"
+            postsymbol="" 
+        elif inc<0:
+            presymbol=""
+            postsymbol="⫷"
+        else:
+            presymbol=""
+            postsymbol=""
+        
+        if number>0:
+            link=f"""<a href="/Vol-{number+inc}.html">{presymbol}Vol-{number+inc}{postsymbol}</a>"""
+        else:
+            link=""
+        return link
+    
     def asHtml(self):
         """
         return an html response
         """
+        
         content=f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,7 +111,9 @@ class Paper(ceurspt.ceurws_base.Paper):
 </td>
 <td style="text-align: right; vertical-align: middle">
 <div style="float:left" id="CEURCCBY"></div>
-<span class="CEURVOLNR"><a href="/Vol-{self.volume.number}.html">Vol-{self.volume.number}</a></span> <br>
+{self.volLink(self.volume.number,-1)}
+<span class="CEURVOLNR">{self.volLink(self.volume.number)}</span>
+{self.volLink(self.volume.number,+1)}<br>
 <span class="CEURURN">urn:nbn:de:0074-{self.volume.number}-0</span>
 <p class="unobtrusive copyright" style="text-align: justify">Copyright &copy; {self.volume.date[:4]} for
 the individual papers by the papers' authors. 
