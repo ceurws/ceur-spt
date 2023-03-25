@@ -48,8 +48,19 @@ class Test_CEURWS(BaseSptTest):
             print(text)
         self.assertTrue("Formalizing Property Constraints in Wikidata" in text)
     
+    def test_volume_as_html(self):
+        """
+        test getting html for a volume
+        """
+        volume=self.vm.getVolume(3262)
+        html=volume.getHtml()
+        debug=True
+        if debug:
+            print(html)
+        self.assertTrue("Vol-3261⫷" in html)
+        self.assertTrue("⫸Vol-3263" in html)
         
-    def test_asHtml(self):
+    def test_paper_as_html(self):
         """
         test getting html for a paper
         """
@@ -61,6 +72,6 @@ class Test_CEURWS(BaseSptTest):
         debug=True
         if debug:
             print(html)
-        self.assertTrue("Formalizing Property Constraints in Wikidata" in html)
+        self.assertTrue("Towards improving Wikidata reuse with emerging patterns" in html)
         
         

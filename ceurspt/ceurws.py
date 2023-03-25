@@ -71,29 +71,11 @@ class Paper(ceurspt.ceurws_base.Paper):
         Args:
             inc(int): the increment +1 = next, -1 = prev
         """
-        
-    def volLink(self,number:int,inc:int=0):
-        if inc>0:
-            presymbol="⫸"
-            postsymbol="" 
-        elif inc<0:
-            presymbol=""
-            postsymbol="⫷"
-        else:
-            presymbol=""
-            postsymbol=""
-        
-        if number>0:
-            link=f"""<a href="/Vol-{number+inc}.html">{presymbol}Vol-{number+inc}{postsymbol}</a>"""
-        else:
-            link=""
-        return link
     
     def asHtml(self):
         """
-        return an html response
+        return an html response for this paper
         """
-        
         content=f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,9 +93,9 @@ class Paper(ceurspt.ceurws_base.Paper):
 </td>
 <td style="text-align: right; vertical-align: middle">
 <div style="float:left" id="CEURCCBY"></div>
-{self.volLink(self.volume.number,-1)}
-<span class="CEURVOLNR">{self.volLink(self.volume.number)}</span>
-{self.volLink(self.volume.number,+1)}<br>
+{Volume.volLink(self.volume.number,-1)}
+<span class="CEURVOLNR">{Volume.volLink(self.volume.number)}</span>
+{Volume.volLink(self.volume.number,+1)}<br>
 <span class="CEURURN">urn:nbn:de:0074-{self.volume.number}-0</span>
 <p class="unobtrusive copyright" style="text-align: justify">Copyright &copy; {self.volume.date[:4]} for
 the individual papers by the papers' authors. 
@@ -136,6 +118,60 @@ class Volume(ceurspt.ceurws_base.Volume):
     """
     a CEUR-WS Volume with it's behavior
     """
+    @classmethod
+    def volLinkParts(cls,number:int,inc:int=0):
+        """
+        a relative volume link
+        """
+        if inc>0:
+            presymbol="⫸"
+            postsymbol="" 
+        elif inc<0:
+            presymbol=""
+            postsymbol="⫷"
+        else:
+            presymbol=""
+            postsymbol=""
+        href=f"/Vol-{number+inc}.html"
+        text=f"{presymbol}Vol-{number+inc}{postsymbol}"
+        return href,text
+    
+    @classmethod
+    def volLink(cls,number:int,inc:int=0)->str:
+        """
+        get a relative volume link
+        
+        Args:
+            number(int): the volume number
+            inc(int): the relative increment
+            
+        Returns(str):
+            a relative volume link
+        """
+        href,text=cls.volLinkParts(number, inc)
+        if number>0:
+            link=f"""<a href="{href}.html">{text}</a>"""
+        else:
+            link=""
+        return link
+    
+    @classmethod
+    def volLink_soup_tag(cls,soup,number:int,inc:int=0)->str:
+        """
+        get a relative volume link as a soup tag
+        
+        Args:
+            soup(BeautifulSoup): the soup
+            number(int): the volume number
+            inc(int): the relative increment
+            
+        Returns(str):
+            a relative volume link
+        """
+        href,text=cls.volLinkParts(number, inc)
+        link=soup.new_tag("a", href=href)
+        link.string=text
+        return link
     
     def getHtml(self,ext:str=".pdf",fixLinks:bool=True)->str:
         """
@@ -160,6 +196,14 @@ class Volume(ceurspt.ceurws_base.Volume):
                         href=f"/Vol-{self.number}/{href}"
                     pass
                     a['href']=href
+                vol_tag = soup.find("span", class_="CEURVOLNR")
+                if vol_tag:
+                    prev_link=Volume.volLink_soup_tag(soup, self.number, -1)
+                    if prev_link:
+                        vol_tag.insert_before(prev_link)
+                    next_link=Volume.volLink_soup_tag(soup, self.number, +1)
+                    if next_link:
+                        vol_tag.insert_after(next_link)
                 content=soup.prettify( formatter="html" )
             return content
     
