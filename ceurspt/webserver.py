@@ -43,7 +43,7 @@ class WebServer:
             get the json response for the given paper
             """
             paper=self.getPaper(number,pdf_name)
-            paper_dict=paper.mergedDict()
+            paper_dict=paper.getMergedDict()
             return paper_dict
         
         @self.app.get("/Vol-{number:int}/{pdf_name}.html")
