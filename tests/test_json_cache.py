@@ -19,7 +19,7 @@ class TestJsonCache(Basetest):
         test reading list of dicts 
         """
         jcm=JsonCacheManager()
-        for lod_name in ["volumes","papers"]:
+        for lod_name in ["volumes","papers","proceedings"]:
             profiler=Profiler(f"read {lod_name}")
             lod=jcm.load_lod(lod_name)    
             elapsed=profiler.time()
@@ -29,7 +29,7 @@ class TestJsonCache(Basetest):
             elapsed=profiler.time()
             print(f"store {len(lod)} {lod_name} in {elapsed:5.1f} s")
             
-    def testGetVolumesAndPapers(self):
+    def testGetVolumesAndPapersAndProceedings(self):
         """
         get volumes and papers
         """

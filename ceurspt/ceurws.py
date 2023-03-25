@@ -150,7 +150,7 @@ class Volume(ceurspt.ceurws_base.Volume):
         """
         href,text=cls.volLinkParts(number, inc)
         if number>0:
-            link=f"""<a href="{href}.html">{text}</a>"""
+            link=f"""<a href="{href}">{text}</a>"""
         else:
             link=""
         return link
@@ -265,8 +265,20 @@ class VolumeManager(JsonCacheManager):
         self.base_path=base_path
         
     def getVolume(self,number:int):
+        """
+        get my volume by volume number
+        
+        Args:
+            number(int): the volume to get
+        """
         if number in self.volumes_by_number:
             return self.volumes_by_number[number]
+        else:
+            return None
+        
+    def getVolumeRecord(self,number:int):
+        if number in self.volume_records_by_number:
+            return self.volume_records_by_number[number]
         else:
             return None
         
@@ -275,9 +287,12 @@ class VolumeManager(JsonCacheManager):
         get my volumes
         """
         volume_lod=self.load_lod("volumes")
+        proceedings_lod=self.load_lod("proceedings")
         self.volumes_by_number={}
+        self.volume_records_by_number={}
         for volume_record in volume_lod:
             vol_number=volume_record["number"]
+            self.volume_records_by_number[vol_number]=volume_record
             title=volume_record["title"]
             pubDate_str=volume_record["pubDate"]
             if pubDate_str:
@@ -294,6 +309,12 @@ class VolumeManager(JsonCacheManager):
             else:
                 volume.vol_dir=None
             self.volumes_by_number[vol_number]=volume
+        for proc_record in proceedings_lod:
+            number=proc_record["sVolume"]
+            volume_record=self.volume_records_by_number[number]
+            for key,value in proc_record.items():
+                volume_record[f"wd_{key}"]=value
+            pass
         
 class PaperManager(JsonCacheManager):
     """
@@ -353,3 +374,4 @@ class PaperManager(JsonCacheManager):
                 self.papers_by_path[pdf_path]=paper
             except Exception as ex:
                 print(f"constructor for Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")
+        

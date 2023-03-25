@@ -3,9 +3,9 @@ Created on 2023-03-18
 
 @author: wf
 '''
-from ceurspt.ceurws import Volume,VolumeManager
+from ceurspt.ceurws import Volume
 from tests.base_spt_test import BaseSptTest
-from pathlib import Path
+import json
 
 class Test_CEURWS(BaseSptTest):
     """
@@ -47,6 +47,15 @@ class Test_CEURWS(BaseSptTest):
         if debug:
             print(text)
         self.assertTrue("Formalizing Property Constraints in Wikidata" in text)
+        
+    def test_volume_record(self):
+        """
+        test json
+        """
+        vol_record=self.vm.getVolumeRecord(3262)
+        debug=True
+        if debug:
+            print(json.dumps(vol_record,indent=2))
     
     def test_volume_as_html(self):
         """

@@ -88,9 +88,9 @@ class WebServer:
             """
             Get metadata of volume by given id
             """
-            if number in self.vm.volumes_by_number:
-                vol=self.vm.volumes_by_number[number]
-                return dataclasses.asdict(vol)
+            volrecord=self.vm.getVolumeRecord(number)
+            if volrecord:
+                return volrecord
             else:
                 return { "error": f"unknown volume number {number}"}
             
