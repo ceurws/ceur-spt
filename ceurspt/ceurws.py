@@ -383,6 +383,13 @@ class Volume(ceurspt.ceurws_base.Volume):
                 "link":f"https://www.wikidata.org/wiki/{self.wd_event_series}", 
                 "valid":self.wd_event_series is not None
             },
+            {
+                "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
+                "title": "JSON metadatat", 
+                "link":f"/Vol-{self.number}.json", 
+                "valid":True
+            },
+            
         ]
         icon_tag=Volume.create_icon_bar(soup, icon_list=icon_list)
         return icon_tag
