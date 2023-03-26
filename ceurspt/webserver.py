@@ -87,9 +87,9 @@ class WebServer:
             """
             Get metadata of volume by given id
             """
-            volrecord=self.vm.getVolumeRecord(number)
-            if volrecord:
-                return volrecord
+            vol=self.getVolume(number)
+            if vol:
+                return vol.getMergedDict()
             else:
                 return { "error": f"unknown volume number {number}"}
             

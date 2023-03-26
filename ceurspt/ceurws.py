@@ -4,6 +4,7 @@ Created on 2023-03-18
 @author: wf
 '''
 import ceurspt.ceurws_base
+from ceurspt.version import Version
 from datetime import datetime
 import os
 from bs4 import BeautifulSoup
@@ -64,11 +65,18 @@ class Paper(ceurspt.ceurws_base.Paper):
         get the merged dict for this paper
         """
         my_dict=dataclasses.asdict(self)
+        m_dict={
+            "version.version": Version.version,
+            "version.cm_url": Version.cm_url,
+            "spt.html_url": f"/{self.paper.id}.html"
+        }
+        for key,value in my_dict.items():
+            m_dict[f"spt.{key}"]=value
         pdf_name=self.pdfUrl.replace("https://ceur-ws.org/","")
         if pdf_name in self.pm.paper_records_by_path:
             pdf_record=self.pm.paper_records_by_path[pdf_name]
             for key,value in pdf_record.items():
-                my_dict[f"cvb_{key}"]=value
+                m_dict[f"cvb.{key}"]=value
         pass
         return my_dict
     
@@ -178,6 +186,30 @@ class Volume(ceurspt.ceurws_base.Volume):
     def __init__(self,**kwargs):
         ceurspt.ceurws_base.Volume.__init__(self,**kwargs)
         self.papers=[]
+        
+    def getMergedDict(self)->dict:
+        """
+        get my merged dict
+        
+        Returns:
+            dict
+        """
+        my_dict=dataclasses.asdict(self)
+        m_dict={
+            "version.version": Version.version,
+            "version.cm_url": Version.cm_url,
+            "spt.html_url": f"/Vol-{self.number}.html"
+        }
+        for key,value in my_dict.items():
+            m_dict[f"spt.{key}"]=value
+        volrecord=self.vm.getVolumeRecord(self.number)
+        for key,value in volrecord.items():
+            if "." in key:
+                m_dict[f"{key}"]=value
+            else:
+                m_dict[f"cvb.{key}"]=value
+        return m_dict
+        
         
     @classmethod
     def volLinkParts(cls,number:int,inc:int=0):
@@ -400,12 +432,26 @@ class VolumeManager(JsonCacheManager):
         for proc_record in proceedings_lod:
             number=proc_record["sVolume"]
             volume_record=self.volume_records_by_number[number]
+            volume=self.volumes_by_number[number]
             for key,value in proc_record.items():
-                volume_record[f"wd_{key}"]=value
-            volume.wikidataid=volume_record["wd_item"]
-            if volume.wikidataid:
-                volume.wikidataid=volume.wikidataid.replace("https://www.wikidata.org/wiki/","")
-            pass
+                volume_record[f"wd.{key}"]=value
+            map_pairs=[
+                ("item","wikidataid"),
+                ("itemDescription","description"),
+                ("dblpProceedingsId","dblp"),
+                ("described_at_URL","url"),
+                ("ppnId","k10plus"),
+                ("URN_NBN","urn")
+            ]
+            for wd_id,attr in map_pairs:
+                wd_key=f"wd.{wd_id}"
+                if wd_key in volume_record:
+                    value=volume_record[wd_key]
+                    if isinstance(value,str):
+                        value=value.replace("http://www.wikidata.org/entity/","")
+                        value=value.replace("https://www.wikidata.org/wiki/","")
+                    setattr(volume,attr,value)
+                    pass
         
 class PaperManager(JsonCacheManager):
     """

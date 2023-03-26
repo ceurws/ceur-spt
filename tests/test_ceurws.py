@@ -69,6 +69,17 @@ class Test_CEURWS(BaseSptTest):
         self.assertTrue("Vol-3261⫷" in html)
         self.assertTrue("⫸Vol-3263" in html)
         
+    def test_volume_as_merged_dict(self):
+        """
+        test getting merged dict for a volume
+        """
+        volume=self.vm.getVolume(3262)
+        m_dict=volume.getMergedDict()
+        debug=self.debug
+        debug=True
+        if debug:
+            print(json.dumps(m_dict,indent=2))        
+
     def test_paper_as_html(self):
         """
         test getting html for a paper
