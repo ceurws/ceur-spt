@@ -61,7 +61,7 @@ class Test_app(BaseSptTest):
         debug=self.debug
         #debug=True
         for ext,expected,check_json in [
-            (".json",{'number': 3262, "acronym": "Wikidata 2022", "title": "Proceedings of the 3rd Wikidata Workshop 2022"},True),
+            (".json",{'spt.number': 3262, "spt.acronym": "Wikidata 2022", "spt.title": "Proceedings of the 3rd Wikidata Workshop 2022"},True),
             ("","CEURVERSION=2020-0",False),
             (".html","CEURVERSION=2020-0",False)
         ]:
