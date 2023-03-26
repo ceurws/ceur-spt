@@ -69,7 +69,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         m_dict={
             "version.version": Version.version,
             "version.cm_url": Version.cm_url,
-            "spt.html_url": f"/{self.paper.id}.html"
+            "spt.html_url": f"/{self.id}.html"
         }
         for key,value in my_dict.items():
             m_dict[f"spt.{key}"]=value
@@ -136,10 +136,31 @@ class Paper(ceurspt.ceurws_base.Paper):
                 paper=vol.papers[next_index]
         return paper
     
+    def getIconBar(self,soup):
+        """
+        get my icon bar
+        
+        Parameters:
+            soup: The BeautifulSoup object to use for creating new tags.
+        """
+        # create a list of icons to add to the div
+        icon_list = [
+            {
+                "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
+                "title": "JSON metadatat", 
+                "link":f"/{self.id}.json", 
+                "valid":True
+            }
+        ]
+        icon_tag=Volume.create_icon_bar(soup, icon_list=icon_list)
+        return icon_tag
+    
     def asHtml(self):
         """
         return an html response for this paper
         """
+        soup=BeautifulSoup("<html></html>", 'html.parser')
+        icon_bar=self.getIconBar(soup)
         content=f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -170,6 +191,7 @@ Creative Commons License Attribution 4.0 International
 </td>
 </tr>
 </tbody></table>
+{str(icon_bar)}
 <hr/>
 {self.paperScrollLinks()}
 <hr/>
