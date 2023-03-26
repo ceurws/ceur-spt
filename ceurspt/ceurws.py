@@ -12,6 +12,7 @@ import urllib.request
 import json
 from pathlib import Path
 import dataclasses
+import typing
 
 class Paper(ceurspt.ceurws_base.Paper):
     """
@@ -210,7 +211,6 @@ class Volume(ceurspt.ceurws_base.Volume):
                 m_dict[f"cvb.{key}"]=value
         return m_dict
         
-        
     @classmethod
     def volLinkParts(cls,number:int,inc:int=0):
         """
@@ -265,6 +265,127 @@ class Volume(ceurspt.ceurws_base.Volume):
         link=soup.new_tag("a", href=href)
         link.string=text
         return link
+        
+    @classmethod
+    def create_icon_bar(self,soup: BeautifulSoup, icon_list: typing.List[typing.Dict[str, str]],class_name: str="icon_list", ) -> "Tag":
+        """
+        Creates a new <div> tag with the specified class name and list of icons.
+    
+        Parameters:
+            soup: The BeautifulSoup object to use for creating new tags.
+            icon_list: The list of icons to add to the <div> tag. Each icon is represented as a
+                dictionary with the following keys:
+                    - src (str): The URL of the icon image file.
+                    - title (str): The title text to use as a tooltip for the icon.
+                    - link (str): The URL to link to when the icon is clicked.
+            class_name: The name of the CSS class to apply to the <div> tag.
+    
+        Returns:
+            Tag: The new <div> tag with the specified class name and list of icons.
+        """
+    
+        # create a new div tag
+        div_tag = soup.new_tag("div")
+        
+        div_tag.append(soup.new_tag("hr"))
+    
+        # add the specified class name to the div tag
+        div_tag["class"] = [class_name]
+    
+        # iterate over the icon list and create a new tag for each icon
+        for icon_data in icon_list:
+            # create a new a tag for the link
+            link_tag = soup.new_tag("a")
+            link_tag["href"] = icon_data["link"]
+            # open link in new tab
+            link_tag["target"] = "_blank"
+            if not icon_data["valid"]:
+                link_tag["disabled"]="disabled"
+    
+            # create a new img tag for the icon
+            icon_tag = soup.new_tag("img")
+    
+            # add the icon attributes to the img tag
+            icon_tag["src"] = icon_data["src"]
+            icon_tag["title"] = icon_data["title"]
+    
+            # append the icon tag to the link tag
+            link_tag.append(icon_tag)
+    
+            # append the link tag to the div tag
+            div_tag.append(link_tag)
+    
+        # return the div tag
+        return div_tag
+    
+    def getIconBar(self,soup):
+        """
+        get my icon bar
+        
+        Parameters:
+            soup: The BeautifulSoup object to use for creating new tags.
+        """
+        volume_record=self.vm.getVolumeRecord(self.number)
+        for wd_key,attr in [("wd.event","wd_event"),("wd.eventSeries","wd_event_series")]:
+            value=None
+            if wd_key in volume_record:
+                value=volume_record[wd_key]
+                if value:
+                    value=value.replace("http://www.wikidata.org/entity/","")
+            setattr(self,attr,value)
+        # create a list of icons to add to the div
+        icon_list = [
+            {
+                "src": "/static/icons/32px-dblp-icon.png", 
+                "title": "dblp",
+                "link":f"https://dblp.org/rec/{self.dblp}",
+                "valid":self.dblp is not None
+            },
+            {
+                "src": "/static/icons/32px-DNB.svg.png",
+                "title":"k10plus/DNB",
+                "link":f"https://opac.k10plus.de/DB=2.299/PPNSET?PPN={self.k10plus}",
+                "valid":self.k10plus is not None
+            },
+            {
+                "src": "/static/icons/32px-Scholia_logo.svg.png", 
+                "title": "Proceedings@scholia",
+                "link":f"https://scholia.toolforge.org/venue/{self.wikidataid}", 
+                "valid":self.wikidataid is not None
+            },
+            {
+                "src": "/static/icons/32px-EventIcon.png", 
+                "title": "Event@scholia",
+                "link":f"https://scholia.toolforge.org/event/{self.wd_event}", 
+                "valid":self.wd_event is not None
+            },
+            {
+                "src": "/static/icons/32px-EventSeriesIcon.png", 
+                "title": "EventSeries@scholia",
+                "link":f"https://scholia.toolforge.org/event-series/{self.wd_event_series}", 
+                "valid":self.wd_event_series is not None
+            },
+            {
+                "src": "/static/icons/32px-Wikidata_Query_Service_Favicon_wbg.svg.png", 
+                "title": "Proceedings@wikidata", 
+                "link":f"https://www.wikidata.org/wiki/{self.wikidataid}", 
+                "valid":self.wikidataid is not None
+            },
+            {
+                "src": "/static/icons/32px-EventIcon.png", 
+                "title": "Event@wikidata", 
+                "link":f"https://www.wikidata.org/wiki/{self.wd_event}", 
+                "valid":self.wd_event is not None
+            },
+            {
+                "src": "/static/icons/32px-EventSeriesIcon.png", 
+                "title": "EventSeries@wikidata", 
+                "link":f"https://www.wikidata.org/wiki/{self.wd_event_series}", 
+                "valid":self.wd_event_series is not None
+            },
+        ]
+        icon_tag=Volume.create_icon_bar(soup, icon_list=icon_list)
+        return icon_tag
     
     def addPaper(self,paper:'Paper'):
         """
@@ -283,30 +404,38 @@ class Volume(ceurspt.ceurws_base.Volume):
             fixLinks(bool): if True fix the links
         """
         index_path=f"{self.vol_dir}/index.html"
-        with open(index_path, 'r') as index_html:
-            content = index_html.read()
-            if fixLinks:
-                soup = BeautifulSoup(content, 'html.parser')
-                for a in soup.findAll(['link','a']):
-                    ohref=a['href'] 
-                    # .replace("google", "mysite")
-                    href=ohref.replace("http://ceur-ws.org/","/")
-                    href=href.replace("../ceur-ws.css","/static/ceur-ws.css")
-                    if ".pdf" in href:
-                        href=href.replace(".pdf",ext)
-                        href=f"/Vol-{self.number}/{href}"
-                    pass
-                    a['href']=href
-                vol_tag = soup.find("span", class_="CEURVOLNR")
-                if vol_tag:
-                    prev_link=Volume.volLink_soup_tag(soup, self.number, -1)
-                    if prev_link:
-                        vol_tag.insert_before(prev_link)
-                    next_link=Volume.volLink_soup_tag(soup, self.number, +1)
-                    if next_link:
-                        vol_tag.insert_after(next_link)
-                content=soup.prettify( formatter="html" )
+        try: 
+            with open(index_path, 'r') as index_html:
+                content = index_html.read()
+                if fixLinks:
+                    soup = BeautifulSoup(content, 'html.parser')
+                    for a in soup.findAll(['link','a']):
+                        ohref=a['href'] 
+                        # .replace("google", "mysite")
+                        href=ohref.replace("http://ceur-ws.org/","/")
+                        href=href.replace("../ceur-ws.css","/static/ceur-ws.css")
+                        if ".pdf" in href:
+                            href=href.replace(".pdf",ext)
+                            href=f"/Vol-{self.number}/{href}"
+                        pass
+                        a['href']=href
+                    vol_tag = soup.find("span", class_="CEURVOLNR")
+                    if vol_tag:
+                        prev_link=Volume.volLink_soup_tag(soup, self.number, -1)
+                        if prev_link:
+                            vol_tag.insert_before(prev_link)
+                        next_link=Volume.volLink_soup_tag(soup, self.number, +1)
+                        if next_link:
+                            vol_tag.insert_after(next_link)
+                    first_hr=soup.find("hr")
+                    if first_hr:
+                        icon_bar=self.getIconBar(soup)
+                        first_hr.insert_before(icon_bar)
+                    content=soup.prettify( formatter="html" )
             return content
+        except Exception as ex:
+            err_html=f"""<span style="color:red">reading {index_path} for Volume {self.number} failed: {str(ex)}</span>"""
+            return err_html
     
 class JsonCacheManager():
     """

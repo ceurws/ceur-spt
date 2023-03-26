@@ -63,6 +63,7 @@ class Test_CEURWS(BaseSptTest):
         """
         volume=self.vm.getVolume(3262)
         html=volume.getHtml()
+        debug=self.debug
         debug=True
         if debug:
             print(html)
