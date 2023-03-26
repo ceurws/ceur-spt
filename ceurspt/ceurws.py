@@ -361,49 +361,49 @@ class Volume(ceurspt.ceurws_base.Volume):
                 "src": "/static/icons/32px-dblp-icon.png", 
                 "title": "dblp",
                 "link":f"https://dblp.org/rec/{self.dblp}",
-                "valid":self.dblp is not None
+                "valid":self.dblp 
             },
             {
                 "src": "/static/icons/32px-DNB.svg.png",
                 "title":"k10plus/DNB",
                 "link":f"https://opac.k10plus.de/DB=2.299/PPNSET?PPN={self.k10plus}",
-                "valid":self.k10plus is not None
+                "valid":self.k10plus 
             },
             {
                 "src": "/static/icons/32px-Scholia_logo.svg.png", 
                 "title": "Proceedings@scholia",
                 "link":f"https://scholia.toolforge.org/venue/{self.wikidataid}", 
-                "valid":self.wikidataid is not None
+                "valid":self.wikidataid 
             },
             {
                 "src": "/static/icons/32px-EventIcon.png", 
                 "title": "Event@scholia",
                 "link":f"https://scholia.toolforge.org/event/{self.wd_event}", 
-                "valid":self.wd_event is not None
+                "valid":self.wd_event 
             },
             {
                 "src": "/static/icons/32px-EventSeriesIcon.png", 
                 "title": "EventSeries@scholia",
                 "link":f"https://scholia.toolforge.org/event-series/{self.wd_event_series}", 
-                "valid":self.wd_event_series is not None
+                "valid":self.wd_event_series 
             },
             {
                 "src": "/static/icons/32px-Wikidata_Query_Service_Favicon_wbg.svg.png", 
                 "title": "Proceedings@wikidata", 
                 "link":f"https://www.wikidata.org/wiki/{self.wikidataid}", 
-                "valid":self.wikidataid is not None
+                "valid":self.wikidataid 
             },
             {
                 "src": "/static/icons/32px-EventIcon.png", 
                 "title": "Event@wikidata", 
                 "link":f"https://www.wikidata.org/wiki/{self.wd_event}", 
-                "valid":self.wd_event is not None
+                "valid":self.wd_event 
             },
             {
                 "src": "/static/icons/32px-EventSeriesIcon.png", 
                 "title": "EventSeries@wikidata", 
                 "link":f"https://www.wikidata.org/wiki/{self.wd_event_series}", 
-                "valid":self.wd_event_series is not None
+                "valid":self.wd_event_series 
             },
             {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
