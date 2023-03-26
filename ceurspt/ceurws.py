@@ -457,9 +457,9 @@ class Volume(ceurspt.ceurws_base.Volume):
                 if fixLinks:
                     soup = BeautifulSoup(content, 'html.parser')
                     for element in soup.findAll(['link','a']):
-                        self.fix_element_tag(element,tag="href")
+                        self.fix_element_tag(element,tag="href",ext=ext)
                     for element in soup.findAll(['image']):
-                        self.fix_element_tag(element, tag="src", ext)
+                        self.fix_element_tag(element, tag="src", ext=ext)
                     vol_tag = soup.find("span", class_="CEURVOLNR")
                     if vol_tag:
                         prev_link=Volume.volLink_soup_tag(soup, self.number, -1)
