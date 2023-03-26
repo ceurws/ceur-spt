@@ -423,6 +423,24 @@ class Volume(ceurspt.ceurws_base.Volume):
         # @TODO fixme to use LinkML generated code
         self.papers.append(paper)
         paper.paper_index=len(self.papers)-1
+        
+    def fix_element_tag(self,element,tag:str="href",ext:str=".pdf"):
+        """
+        fix the given element tag
+        
+        Args:
+            tag(str): the tag to fix
+            ext(str): the extension
+        """
+        org_tag_value=element[tag] 
+        value=org_tag_value.replace("http://ceur-ws.org/","/")
+        for file in ["ceur-ws.css","CEUR-WS-logo.png"]:
+            value=value.replace(f"../{file}",f"/static/{file}")
+        if ".pdf" in value:
+            value=value.replace(".pdf",ext)
+            value=f"/Vol-{self.number}/{value}"
+            pass
+        element[tag]=value
     
     def getHtml(self,ext:str=".pdf",fixLinks:bool=True)->str:
         """
@@ -438,16 +456,10 @@ class Volume(ceurspt.ceurws_base.Volume):
                 content = index_html.read()
                 if fixLinks:
                     soup = BeautifulSoup(content, 'html.parser')
-                    for a in soup.findAll(['link','a']):
-                        ohref=a['href'] 
-                        # .replace("google", "mysite")
-                        href=ohref.replace("http://ceur-ws.org/","/")
-                        href=href.replace("../ceur-ws.css","/static/ceur-ws.css")
-                        if ".pdf" in href:
-                            href=href.replace(".pdf",ext)
-                            href=f"/Vol-{self.number}/{href}"
-                        pass
-                        a['href']=href
+                    for element in soup.findAll(['link','a']):
+                        self.fix_element_tag(element,tag="href")
+                    for element in soup.findAll(['image']):
+                        self.fix_element_tag(element, tag="src", ext)
                     vol_tag = soup.find("span", class_="CEURVOLNR")
                     if vol_tag:
                         prev_link=Volume.volLink_soup_tag(soup, self.number, -1)
