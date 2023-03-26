@@ -146,8 +146,15 @@ class Paper(ceurspt.ceurws_base.Paper):
         # create a list of icons to add to the div
         icon_list = [
             {
+                "src": "/static/icons/32px-GROBID-icon.png", 
+                "title": "GROBID metadata", 
+                "link":f"/{self.id}.grobid", 
+                # @TODO check existens of .grobid file
+                "valid":True
+            },
+            {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
-                "title": "JSON metadatat", 
+                "title": "JSON metadata", 
                 "link":f"/{self.id}.json", 
                 "valid":True
             }
@@ -407,7 +414,7 @@ class Volume(ceurspt.ceurws_base.Volume):
             },
             {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
-                "title": "JSON metadatat", 
+                "title": "JSON metadata", 
                 "link":f"/Vol-{self.number}.json", 
                 "valid":True
             },
