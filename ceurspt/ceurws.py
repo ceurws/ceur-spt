@@ -372,7 +372,7 @@ class Volume(ceurspt.ceurws_base.Volume):
             # open link in new tab
             link_tag["target"] = "_blank"
             if not icon_data["valid"]:
-                link_tag["disabled"]="disabled"
+                link_tag['style'] = "filter: grayscale(1);"
     
             # create a new img tag for the icon
             icon_tag = soup.new_tag("img")
