@@ -4,14 +4,17 @@ Created on 2023-03-18
 @author: wf
 '''
 import ceurspt.ceurws_base
+
+from bs4 import BeautifulSoup
+from ceurspt.profiler import Profiler
 from ceurspt.version import Version
 from datetime import datetime
-import os
-from bs4 import BeautifulSoup
-import urllib.request
-import json
 from pathlib import Path
+
+import urllib.request
 import dataclasses
+import json
+import os
 import typing
 
 class Paper(ceurspt.ceurws_base.Paper):
@@ -145,6 +148,13 @@ class Paper(ceurspt.ceurws_base.Paper):
         """
         # create a list of icons to add to the div
         icon_list = [
+            {
+                "src": "/static/icons/32px-text-icon.png", 
+                "title": "plain text", 
+                "link":f"/{self.id}.txt", 
+                # @TODO check existence of .txt file
+                "valid":True
+            },
             {
                 "src": "/static/icons/32px-GROBID-icon.png", 
                 "title": "GROBID metadata", 
@@ -579,10 +589,14 @@ class VolumeManager(JsonCacheManager):
         else:
             return None
         
-    def getVolumes(self):
+    def getVolumes(self,verbose:bool=False):
         """
         get my volumes
+        
+        Args:
+            verbose(bool): if True show verbose loading information
         """
+        profiler=Profiler("Loading volumes",profile=verbose)
         volume_lod=self.load_lod("volumes")
         proceedings_lod=self.load_lod("proceedings")
         self.volumes_by_number={}
@@ -629,6 +643,8 @@ class VolumeManager(JsonCacheManager):
                         value=value.replace("https://www.wikidata.org/wiki/","")
                     setattr(volume,attr,value)
                     pass
+        msg=f"{len(self.volumes_by_number)} volumes"
+        profiler.time(msg)
         
 class PaperManager(JsonCacheManager):
     """
@@ -663,15 +679,19 @@ class PaperManager(JsonCacheManager):
             paper.pm=self
         return paper
     
-    def getPapers(self,vm:VolumeManager):
+    def getPapers(self,vm:VolumeManager, verbose:bool=False):
         """
         get all papers
+        
+        Args:
+            verbose(bool): if True show verbose loading information
         """
+        profiler=Profiler("Loading papers ...",profile=verbose)
         paper_lod=self.load_lod("papers")
         self.papers_by_id={}
         self.paper_records_by_path={}
         self.papers_by_path={}
-        for paper_record in paper_lod:
+        for index,paper_record in enumerate(paper_lod):
             pdf_name=paper_record["pdf_name"]
             volume_number=paper_record["vol_number"]
             volume=vm.getVolume(volume_number)
@@ -693,4 +713,6 @@ class PaperManager(JsonCacheManager):
                 self.paper_records_by_path[pdf_path]=paper_record
             except Exception as ex:
                 print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")
+        msg=f"{len(self.papers_by_path)} papers"
+        profiler.time(msg)    
         

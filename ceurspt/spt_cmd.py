@@ -40,6 +40,8 @@ class CeurSptCmd:
         parser.add_argument("-bu","--baseurl",help="the base url to use for the RESTFul metadata service [default: %(default)s]",default=base_url)
         parser.add_argument("-d", "--debug", dest="debug", action="store_true",
                             help="show debug info [default: %(default)s]")
+        parser.add_argument("-v", "--verbose", dest="debug", action="store_true",
+                            help="show verbose infos e.g. on startup [default: %(default)s]")
         parser.add_argument("--host", default=self.get_default_host(),
                             help="the host to serve / listen from [default: %(default)s]")
         parser.add_argument("--port", type=int, default=9990, help="the port to serve from [default: %(default)s]")
@@ -67,9 +69,9 @@ class CeurSptCmd:
             args(Arguments): command line arguments
         """
         vm=VolumeManager(base_path=args.basepath,base_url=args.baseurl)
-        vm.getVolumes()
+        vm.getVolumes(args.verbose)
         pm=PaperManager(base_url=args.baseurl)
-        pm.getPapers(vm)
+        pm.getPapers(vm,args.verbose)
         ws = WebServer(vm,pm)
         uvicorn.run(ws.app, host=args.host, port=args.port)
 

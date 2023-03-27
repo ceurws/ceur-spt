@@ -23,7 +23,9 @@ dependencies = [
   # https://pypi.org/project/linkml-runtime/
   "linkml-runtime",
   # https://pypi.org/project/beautifulsoup4/
-  "beautifulsoup4"
+  "beautifulsoup4",
+  # https://github.com/tqdm/tqdm
+  "tqdm"
 ]
 
 requires-python = ">=3.8"
