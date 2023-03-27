@@ -40,7 +40,7 @@ class CeurSptCmd:
         parser.add_argument("-bu","--baseurl",help="the base url to use for the RESTFul metadata service [default: %(default)s]",default=base_url)
         parser.add_argument("-d", "--debug", dest="debug", action="store_true",
                             help="show debug info [default: %(default)s]")
-        parser.add_argument("-v", "--verbose", dest="debug", action="store_true",
+        parser.add_argument("-v", "--verbose", action="store_true",
                             help="show verbose infos e.g. on startup [default: %(default)s]")
         parser.add_argument("--host", default=self.get_default_host(),
                             help="the host to serve / listen from [default: %(default)s]")
