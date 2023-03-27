@@ -92,7 +92,7 @@ class Test_CEURWS(BaseSptTest):
         self.assertEqual(3,next_paper.paper_index)
         html=paper.asHtml()
         debug=self.debug
-        #debug=True
+        debug=True
         if debug:
             print(html)
         scroll_link="""<a href="/Vol-3262/paper1.html">Vol-3262/paper1⫷</a><a href="/Vol-3262/paper2.html">Vol-3262/paper2</a><a href="/Vol-3262/paper3.html">⫸Vol-3262/paper3</a>"""

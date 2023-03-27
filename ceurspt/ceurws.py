@@ -34,19 +34,40 @@ class Paper(ceurspt.ceurws_base.Paper):
                 return base_path
         return None
     
+    def getContentPathByPostfix(self,postfix:str):
+        """
+        get the content path for the given postfix
+        
+        Args:
+            postfix(str): the postfix to read
+            
+        Returns:
+            str: the context path
+        """
+        base_path=self.getBasePath()
+        if base_path is None:
+            return None
+        text_path=f"{base_path}{postfix}"
+        if os.path.isfile(text_path):
+            return text_path
+        else:
+            return None
+        
     def getContentByPostfix(self,postfix:str)->str:
         """
         get the content for the given postfix
         
         Args:
             postfix(str): the postfix to read
+            
+        Returns:
+            str: the context 
         """
-        base_path=self.getBasePath()
-        if base_path is None:
-            return None
-        text_path=f"{base_path}{postfix}"
-        with open(text_path, 'r') as text_file:
-            content = text_file.read()
+        text_path=self.getContenPathByPostfix(postfix)
+        content=None
+        if text_path:
+            with open(text_path, 'r') as text_file:
+                content = text_file.read()
         return content
     
     def getText(self)->str:
@@ -146,21 +167,33 @@ class Paper(ceurspt.ceurws_base.Paper):
         Parameters:
             soup: The BeautifulSoup object to use for creating new tags.
         """
+        pdf_name=self.pdfUrl.replace("https://ceur-ws.org/","")
+        pdf_name=pdf_name.replace(".pdf","")
         # create a list of icons to add to the div
         icon_list = [
             {
                 "src": "/static/icons/32px-text-icon.png", 
                 "title": "plain text", 
-                "link":f"/{self.id}.txt", 
-                # @TODO check existence of .txt file
-                "valid":True
+                "link":f"/{pdf_name}.txt", 
+                "valid": self.getContentPathByPostfix(".txt")
             },
+            {
+                "src": "/static/icons/32px-PDF_icon.svg.png",
+                "title": "original pdf", 
+                "link":f"/{pdf_name}.txt",
+                "valid": self.getContentPathByPostfix(".pdf")
+            },
+            {
+                "src": "/static/icons/32px-Cermine-Icon.png", 
+                "title": "Cermine metadata", 
+                "link":f"/{pdf_name}.grobid", 
+                "valid": self.getContentPathByPostfix(".cermine")
+            },    
             {
                 "src": "/static/icons/32px-GROBID-icon.png", 
                 "title": "GROBID metadata", 
-                "link":f"/{self.id}.grobid", 
-                # @TODO check existens of .grobid file
-                "valid":True
+                "link":f"/{pdf_name}.grobid", 
+                "valid": self.getContentPathByPostfix(".grobid")
             },
             {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
