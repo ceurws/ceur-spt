@@ -63,7 +63,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         Returns:
             str: the context 
         """
-        text_path=self.getContenPathByPostfix(postfix)
+        text_path=self.getContentPathByPostfix(postfix)
         content=None
         if text_path:
             with open(text_path, 'r') as text_file:
@@ -180,13 +180,13 @@ class Paper(ceurspt.ceurws_base.Paper):
             {
                 "src": "/static/icons/32px-PDF_icon.svg.png",
                 "title": "original pdf", 
-                "link":f"/{pdf_name}.txt",
+                "link":f"/{pdf_name}.pdf",
                 "valid": self.getContentPathByPostfix(".pdf")
             },
             {
                 "src": "/static/icons/32px-Cermine-Icon.png", 
                 "title": "Cermine metadata", 
-                "link":f"/{pdf_name}.grobid", 
+                "link":f"/{pdf_name}.cermine", 
                 "valid": self.getContentPathByPostfix(".cermine")
             },    
             {
