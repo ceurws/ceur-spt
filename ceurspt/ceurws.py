@@ -102,8 +102,8 @@ class Paper(ceurspt.ceurws_base.Paper):
             pdf_record=self.pm.paper_records_by_path[pdf_name]
             for key,value in pdf_record.items():
                 m_dict[f"cvb.{key}"]=value
-        if pdf_name in self.pm.dblp_records_by_path:
-            dblp_record=self.pm.dblp_records_by_path[pdf_name]
+        if pdf_name in self.pm.paper_dblp_by_path:
+            dblp_record=self.pm.paper_dblp_by_path[pdf_name]
             for key,value in dblp_record.items():
                 m_dict[f"dblp.{key}"]=value
         return m_dict
