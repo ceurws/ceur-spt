@@ -102,8 +102,7 @@ class Paper(ceurspt.ceurws_base.Paper):
             pdf_record=self.pm.paper_records_by_path[pdf_name]
             for key,value in pdf_record.items():
                 m_dict[f"cvb.{key}"]=value
-        pass
-        return my_dict
+        return m_dict
     
     def paperLinkParts(self:int,inc:int=0):
         """
@@ -722,10 +721,15 @@ class PaperManager(JsonCacheManager):
         """
         profiler=Profiler("Loading papers ...",profile=verbose)
         paper_lod=self.load_lod("papers")
+        msg=f"{len(paper_lod)} papers"
+        profiler.time(msg) 
+        paper_dblp_lod=self.load_lod("papers_dblp")
+        msg=f"{len(paper_dblp_lod)} dblp indexed papers"
+        profiler.time(msg) 
         self.papers_by_id={}
         self.paper_records_by_path={}
         self.papers_by_path={}
-        for index,paper_record in enumerate(paper_lod):
+        for _index,paper_record in enumerate(paper_lod):
             pdf_name=paper_record["pdf_name"]
             volume_number=paper_record["vol_number"]
             volume=vm.getVolume(volume_number)
