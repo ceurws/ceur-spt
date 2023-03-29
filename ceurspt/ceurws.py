@@ -13,7 +13,7 @@ from pathlib import Path
 
 import urllib.request
 import dataclasses
-import json
+import orjson
 import os
 import typing
 
@@ -568,11 +568,13 @@ class JsonCacheManager():
         json_path=self.json_path(lod_name)
         if os.path.isfile(json_path):
             with open(json_path) as json_file:
-                lod = json.load(json_file)
+                json_str=json_file.read()
+                lod = orjson.loads(json_str)
         else:
             url=f"{self.base_url}/{lod_name}.json"
             with urllib.request.urlopen(url) as source:
-                lod = json.load(source)
+                json_str=source.read()
+                lod = orjson.loads(json_str)
         return lod
     
     def store(self,lod_name:str,lod:list):
@@ -583,10 +585,9 @@ class JsonCacheManager():
             lod_name(str): the name of the list of dicts cache to write
             lod(list): the list of dicts to write
         """
-        with open(self.json_path(lod_name), 'w') as json_file:
-            json.dump(lod, json_file)
-    
-
+        with open(self.json_path(lod_name), 'wb') as json_file:
+            json_str=orjson.dumps(lod)
+            json_file.write(json_str)
             pass
 
 class VolumeManager(JsonCacheManager):
