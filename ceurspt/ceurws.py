@@ -566,15 +566,25 @@ class JsonCacheManager():
         """
         json_path=self.json_path(lod_name)
         if os.path.isfile(json_path):
-            with open(json_path) as json_file:
-                json_str=json_file.read()
-                lod = orjson.loads(json_str)
+            try: 
+                with open(json_path) as json_file:
+                    json_str=json_file.read()
+                    lod = orjson.loads(json_str)
+            except Exception as ex:
+                msg=f"Could not read {lod_name} from {json_path} due to {str(ex)}"
+                raise Exception(msg)
         else:
-            url=f"{self.base_url}/{lod_name}.json"
-            with urllib.request.urlopen(url) as source:
-                json_str=source.read()
-                lod = orjson.loads(json_str)
+            try: 
+                url=f"{self.base_url}/{lod_name}.json"
+                with urllib.request.urlopen(url) as source:
+                    json_str=source.read()
+                    lod = orjson.loads(json_str)
+            except Exception as ex:
+                msg=f"Could not read {lod_name} from {url} due to {str(ex)}"
+                raise Exception(msg)
         return lod
+        
+            
     
     def store(self,lod_name:str,lod:list):
         """
