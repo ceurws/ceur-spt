@@ -491,6 +491,56 @@ class Volume(ceurspt.ceurws_base.Volume):
             value=f"/Vol-{self.number}/{value}"
             pass
         element[tag]=value
+
+    def add_volume_navigation(self, soup: BeautifulSoup):
+        """
+        Add navigation bar to volume number to jump to the volume below and above
+        Args:
+            soup: index page
+        """
+        vol_tag = soup.find("span", class_="CEURVOLNR")
+        if vol_tag:
+            prev_link = Volume.volLink_soup_tag(soup, self.number, -1)
+            if prev_link:
+                vol_tag.insert_before(prev_link)
+            next_link = Volume.volLink_soup_tag(soup, self.number, +1)
+            if next_link:
+                vol_tag.insert_after(next_link)
+
+    def get_empty_volume_page(self):
+        """
+        Get empty volume page
+        """
+        html_page = f"""
+            <!DOCTYPE html>
+            <!-- CEURVERSION=2020-07-09 -->
+            <html lang="en">
+            <head>
+            <meta http-equiv="Content-type" content="text/html;charset=utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" type="text/css" href="../ceur-ws.css">
+            </head>
+            <!--CEURLANG=eng -->
+            <body>
+            
+            <table style="border: 0; border-spacing: 0; border-collapse: collapse; width: 95%">
+            <tbody><tr>
+            <td style="text-align: left; vertical-align: middle">
+            <a href="http://ceur-ws.org/"><div id="CEURWSLOGO"></div></a>
+            </td>
+            <td style="text-align: right; vertical-align: middle">
+            <div style="float:left" id="CEURCCBY"></div>
+            <span class="CEURVOLNR">Vol-{self.number}</span> <br>
+            <span class="CEURURN">urn:nbn:de:0074-3365-4</span>
+            </td>
+            </tr>
+            </tbody></table>
+            </body></html>
+        """
+        soup = BeautifulSoup(html_page, 'html.parser')
+        self.add_volume_navigation(soup)
+        content = soup.prettify(formatter="html")
+        return content
     
     def getHtml(self,ext:str=".pdf",fixLinks:bool=True)->str:
         """
@@ -510,14 +560,7 @@ class Volume(ceurspt.ceurws_base.Volume):
                         self.fix_element_tag(element,tag="href",ext=ext)
                     for element in soup.findAll(['image']):
                         self.fix_element_tag(element, tag="src", ext=ext)
-                    vol_tag = soup.find("span", class_="CEURVOLNR")
-                    if vol_tag:
-                        prev_link=Volume.volLink_soup_tag(soup, self.number, -1)
-                        if prev_link:
-                            vol_tag.insert_before(prev_link)
-                        next_link=Volume.volLink_soup_tag(soup, self.number, +1)
-                        if next_link:
-                            vol_tag.insert_after(next_link)
+                    self.add_volume_navigation(soup)
                     first_hr=soup.find("hr")
                     if first_hr:
                         icon_bar=self.getIconBar(soup)
@@ -553,7 +596,7 @@ class JsonCacheManager():
         root_path=f"{Path.home()}/.ceurws"
         os.makedirs(root_path, exist_ok=True)
         json_path=f"{root_path}/{lod_name}.json"
-        return  json_path
+        return json_path
         
     def load_lod(self,lod_name:str)->list:
         """
@@ -585,8 +628,6 @@ class JsonCacheManager():
         """
         with open(self.json_path(lod_name), 'w') as json_file:
             json.dump(lod, json_file)
-    
-
             pass
 
 class VolumeManager(JsonCacheManager):
@@ -601,7 +642,7 @@ class VolumeManager(JsonCacheManager):
             base_path(str): the path to my files
             base_url(str): the url of the RESTFul metadata service
         """
-        JsonCacheManager.__init__(self,base_url=base_url)
+        JsonCacheManager.__init__(self, base_url=base_url)
         self.base_path=base_path
         
     def getVolume(self,number:int):
@@ -616,7 +657,7 @@ class VolumeManager(JsonCacheManager):
         else:
             return None
         
-    def getVolumeRecord(self,number:int):
+    def getVolumeRecord(self, number:int):
         if number in self.volume_records_by_number:
             return self.volume_records_by_number[number]
         else:
