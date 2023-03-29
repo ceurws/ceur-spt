@@ -13,7 +13,7 @@ from pathlib import Path
 
 import urllib.request
 import dataclasses
-import json
+import orjson
 import os
 import typing
 
@@ -102,8 +102,11 @@ class Paper(ceurspt.ceurws_base.Paper):
             pdf_record=self.pm.paper_records_by_path[pdf_name]
             for key,value in pdf_record.items():
                 m_dict[f"cvb.{key}"]=value
-        pass
-        return my_dict
+        if pdf_name in self.pm.paper_dblp_by_path:
+            dblp_record=self.pm.paper_dblp_by_path[pdf_name]
+            for key,value in dblp_record.items():
+                m_dict[f"dblp.{key}"]=value
+        return m_dict
     
     def paperLinkParts(self:int,inc:int=0):
         """
@@ -541,7 +544,7 @@ class Volume(ceurspt.ceurws_base.Volume):
         self.add_volume_navigation(soup)
         content = soup.prettify(formatter="html")
         return content
-    
+
     def getHtml(self,ext:str=".pdf",fixLinks:bool=True)->str:
         """
         get my HTML content
@@ -610,14 +613,24 @@ class JsonCacheManager():
         """
         json_path=self.json_path(lod_name)
         if os.path.isfile(json_path):
-            with open(json_path) as json_file:
-                lod = json.load(json_file)
+            try:
+                with open(json_path) as json_file:
+                    json_str=json_file.read()
+                    lod = orjson.loads(json_str)
+            except Exception as ex:
+                msg=f"Could not read {lod_name} from {json_path} due to {str(ex)}"
+                raise Exception(msg)
         else:
-            url=f"{self.base_url}/{lod_name}.json"
-            with urllib.request.urlopen(url) as source:
-                lod = json.load(source)
+            try:
+                url=f"{self.base_url}/{lod_name}.json"
+                with urllib.request.urlopen(url) as source:
+                    json_str=source.read()
+                    lod = orjson.loads(json_str)
+            except Exception as ex:
+                msg=f"Could not read {lod_name} from {url} due to {str(ex)}"
+                raise Exception(msg)
         return lod
-    
+
     def store(self,lod_name:str,lod:list):
         """
         store my list of dicts
@@ -626,8 +639,9 @@ class JsonCacheManager():
             lod_name(str): the name of the list of dicts cache to write
             lod(list): the list of dicts to write
         """
-        with open(self.json_path(lod_name), 'w') as json_file:
-            json.dump(lod, json_file)
+        with open(self.json_path(lod_name), 'wb') as json_file:
+            json_str=orjson.dumps(lod)
+            json_file.write(json_str)
             pass
 
 class VolumeManager(JsonCacheManager):
@@ -762,10 +776,17 @@ class PaperManager(JsonCacheManager):
         """
         profiler=Profiler("Loading papers ...",profile=verbose)
         paper_lod=self.load_lod("papers")
+        msg=f"{len(paper_lod)} papers"
+        profiler.time(msg)
+        profiler=Profiler("Loading dblp paper metadata ...",profile=verbose)
+        paper_dblp_lod=self.load_lod("papers_dblp")
+        msg=f"{len(paper_dblp_lod)} dblp indexed papers"
+        profiler.time(msg)
+        profiler=Profiler("Linking papers and volumes...",profile=verbose)
         self.papers_by_id={}
         self.paper_records_by_path={}
         self.papers_by_path={}
-        for index,paper_record in enumerate(paper_lod):
+        for _index,paper_record in enumerate(paper_lod):
             pdf_name=paper_record["pdf_name"]
             volume_number=paper_record["vol_number"]
             volume=vm.getVolume(volume_number)
@@ -787,6 +808,10 @@ class PaperManager(JsonCacheManager):
                 self.paper_records_by_path[pdf_path]=paper_record
             except Exception as ex:
                 print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")
-        msg=f"{len(self.papers_by_path)} papers"
+        self.paper_dblp_by_path={}
+        for _index,dblp_record in enumerate(paper_dblp_lod):
+            pdf_id=dblp_record["pdf_id"]
+            self.paper_dblp_by_path[f"{pdf_id}.pdf"]=dblp_record
+        msg=f"{len(self.papers_by_path)} papers linked to volumes"
         profiler.time(msg)    
         

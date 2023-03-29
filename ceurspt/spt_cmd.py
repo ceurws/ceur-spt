@@ -40,6 +40,8 @@ class CeurSptCmd:
         parser.add_argument("-bu","--baseurl",help="the base url to use for the RESTFul metadata service [default: %(default)s]",default=base_url)
         parser.add_argument("-d", "--debug", dest="debug", action="store_true",
                             help="show debug info [default: %(default)s]")
+        parser.add_argument("-rc","--recreate",action="store_true",help="reload caches e.g. volume table")
+
         parser.add_argument("-v", "--verbose", action="store_true",
                             help="show verbose infos e.g. on startup [default: %(default)s]")
         parser.add_argument("--host", default=self.get_default_host(),
@@ -62,9 +64,11 @@ class CeurSptCmd:
         if host == "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa":
             host = "localhost"  # host="127.0.0.1"
         return host
-
-    def start(self, args: Namespace):
+    
+    def recreate(self, args: Namespace):
         """
+        recreate the caches
+        
         Args:
             args(Arguments): command line arguments
         """
@@ -72,6 +76,14 @@ class CeurSptCmd:
         vm.getVolumes(args.verbose)
         pm=PaperManager(base_url=args.baseurl)
         pm.getPapers(vm,args.verbose)
+        return vm,pm
+        
+    def start(self, args: Namespace):
+        """
+        Args:
+            args(Arguments): command line arguments
+        """
+        vm,pm=self.recreate(args)
         ws = WebServer(vm,pm)
         uvicorn.run(ws.app, host=args.host, port=args.port)
 
@@ -98,6 +110,8 @@ def main(argv=None):  # IGNORE:C0111
             print(program_version_message)
             print(f"see {Version.doc_url}")
             webbrowser.open(Version.doc_url)
+        if args.recreate:
+            spt_cmd.recreate(args)
         elif args.serve:
             spt_cmd.start(args)
 

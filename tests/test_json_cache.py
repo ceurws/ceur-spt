@@ -19,7 +19,7 @@ class TestJsonCache(Basetest):
         test reading list of dicts 
         """
         jcm=JsonCacheManager()
-        for lod_name in ["volumes","papers","proceedings"]:
+        for lod_name in ["volumes","papers","proceedings","papers_dblp"]:
             profiler=Profiler(f"read {lod_name}")
             lod=jcm.load_lod(lod_name)    
             elapsed=profiler.time()
