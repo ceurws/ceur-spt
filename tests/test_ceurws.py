@@ -99,6 +99,20 @@ class Test_CEURWS(BaseSptTest):
         self.assertTrue("Towards improving Wikidata reuse with emerging patterns" in html)
         self.assertTrue(scroll_link in html)
         
+    def test_author_bar(self):
+        """
+        test getting author bar html for a paper
+        """
+        paper=self.pm.getPaper(3262,"paper2")
+        author_bar=paper.getAuthorBar()
+        debug=self.debug
+        debug=True
+        if debug:
+            print(author_bar)
+        self.assertTrue("Paul Groth" in author_bar)
+        self.assertTrue("0000-0003-0183-6910" in author_bar)
+    
+        
     def test_paper_as_merged_json(self):
         """
         test getting merged json for a paper

@@ -108,6 +108,67 @@ class Paper(ceurspt.ceurws_base.Paper):
                 m_dict[f"dblp.{key}"]=value
         return m_dict
     
+    def getAuthorBar(self):
+        """
+        show the authors of this paper
+        """
+        m_dict=self.getMergedDict()
+        authors=m_dict["cvb.authors"]
+        html=f"{authors}"
+        if "dblp.authors" in m_dict:
+            dblp_authors=m_dict["dblp.authors"]
+            if len(dblp_authors)>0:
+                html=""
+                for author_record in dblp_authors:
+                    dblp_url=author_record["dblp_author_id"]
+                    name=author_record["label"]
+                    wd_id=author_record["wikidata_id"]
+                    orcid=author_record["orcid_id"]
+                    gnd_id=author_record["gnd_id"]
+                    pass
+                    icon_list = [
+                    {
+                        "src": "/static/icons/32px-dblp-icon.png", 
+                        "title": "dblp",
+                        "link":f"{dblp_url}",
+                        "valid":dblp_url
+                    },
+                    {
+                        "src": "/static/icons/32px-ORCID-icon.png", 
+                        "title": "ORCID",
+                        "link":f"https://orcid.org/{orcid}",
+                        "valid":orcid
+                    },
+                    {
+                        "src": "/static/icons/32px-DNB.svg.png",
+                        "title":"DNB",
+                        "link":f"https://portal.dnb.de/opac.htm?method=simpleSearch&cqlMode=true&query=nid%253D{gnd_id}",
+                        "valid":gnd_id
+                    },
+                    {
+                        "src": "/static/icons/32px-Scholia_logo.svg.png", 
+                        "title": "Author@scholia",
+                        "link":f"https://scholia.toolforge.org/author/{wd_id}", 
+                        "valid":wd_id 
+                    },
+                   
+                    {
+                        "src": "/static/icons/32px-Wikidata_Query_Service_Favicon_wbg.svg.png", 
+                        "title": "Author@wikidata", 
+                        "link":f"https://www.wikidata.org/wiki/{wd_id}", 
+                        "valid":wd_id
+                    }]
+                    soup=BeautifulSoup("<html></html>", 'html.parser')
+                    link_tags=Volume.create_icon_list(soup, icon_list)
+                    red=not wd_id and not dblp_url and not gnd_id and not orcid
+                    style="color:red" if red else ""
+                    html=f"""<span style="{style}">{name}"""
+                    for link_tag in link_tags:
+                        html+=str(link_tag)
+                    html+="</span>"
+                    pass
+        return html
+    
     def paperLinkParts(self:int,inc:int=0):
         """
         a relative paper link
@@ -214,6 +275,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         """
         soup=BeautifulSoup("<html></html>", 'html.parser')
         icon_bar=self.getIconBar(soup)
+        author_bar=self.getAuthorBar()
         content=f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -247,6 +309,8 @@ Creative Commons License Attribution 4.0 International
 {str(icon_bar)}
 <hr/>
 {self.paperScrollLinks()}
+<hr/>
+{str(author_bar)}
 <hr/>
 <h1>{self.title}<h1>
 <embed src="{self.pdfUrl}" style="width:100vw;height:100vh" type="application/pdf">
@@ -342,11 +406,50 @@ class Volume(ceurspt.ceurws_base.Volume):
         return link
         
     @classmethod
-    def create_icon_bar(self,soup: BeautifulSoup, icon_list: typing.List[typing.Dict[str, str]],class_name: str="icon_list", ) -> "Tag":
+    def create_icon_list(cls,soup: BeautifulSoup, icon_list: typing.List[typing.Dict[str, str]])->typing.List['Tag']:  
+        """
+        create a list of icons
+        
+        Args:
+            soup: The BeautifulSoup object to use for creating new tags.
+            icon_list: The list of icons to add to the <div> tag. Each icon is represented as a
+                dictionary with the following keys:
+                    - src (str): The URL of the icon image file.
+                    - title (str): The title text to use as a tooltip for the icon.
+                    - link (str): The URL to link to when the icon is clicked.
+                
+        Returns:
+            a list of link_tags
+        """
+        link_tags=[]
+        # iterate over the icon list and create a new tag for each icon
+        for icon_data in icon_list:
+            # create a new a tag for the link
+            link_tag = soup.new_tag("a")
+            link_tag["href"] = icon_data["link"]
+            # open link in new tab
+            link_tag["target"] = "_blank"
+            if not icon_data["valid"]:
+                link_tag['style'] = "filter: grayscale(1);"
+    
+            # create a new img tag for the icon
+            icon_tag = soup.new_tag("img")
+    
+            # add the icon attributes to the img tag
+            icon_tag["src"] = icon_data["src"]
+            icon_tag["title"] = icon_data["title"]
+    
+            # append the icon tag to the link tag
+            link_tag.append(icon_tag)
+            link_tags.append(link_tag)
+        return link_tags
+          
+    @classmethod
+    def create_icon_bar(cls,soup: BeautifulSoup, icon_list: typing.List[typing.Dict[str, str]],class_name: str="icon_list", ) -> "Tag":
         """
         Creates a new <div> tag with the specified class name and list of icons.
     
-        Parameters:
+        Args:
             soup: The BeautifulSoup object to use for creating new tags.
             icon_list: The list of icons to add to the <div> tag. Each icon is represented as a
                 dictionary with the following keys:
@@ -367,26 +470,7 @@ class Volume(ceurspt.ceurws_base.Volume):
         # add the specified class name to the div tag
         div_tag["class"] = [class_name]
     
-        # iterate over the icon list and create a new tag for each icon
-        for icon_data in icon_list:
-            # create a new a tag for the link
-            link_tag = soup.new_tag("a")
-            link_tag["href"] = icon_data["link"]
-            # open link in new tab
-            link_tag["target"] = "_blank"
-            if not icon_data["valid"]:
-                link_tag['style'] = "filter: grayscale(1);"
-    
-            # create a new img tag for the icon
-            icon_tag = soup.new_tag("img")
-    
-            # add the icon attributes to the img tag
-            icon_tag["src"] = icon_data["src"]
-            icon_tag["title"] = icon_data["title"]
-    
-            # append the icon tag to the link tag
-            link_tag.append(icon_tag)
-    
+        for link_tag in cls.create_icon_list(soup, icon_list):
             # append the link tag to the div tag
             div_tag.append(link_tag)
     
