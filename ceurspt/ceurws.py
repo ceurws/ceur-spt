@@ -102,6 +102,10 @@ class Paper(ceurspt.ceurws_base.Paper):
             pdf_record=self.pm.paper_records_by_path[pdf_name]
             for key,value in pdf_record.items():
                 m_dict[f"cvb.{key}"]=value
+        if pdf_name in self.pm.dblp_records_by_path:
+            dblp_record=self.pm.dblp_records_by_path[pdf_name]
+            for key,value in dblp_record.items():
+                m_dict[f"dblp.{key}"]=value
         return m_dict
     
     def paperLinkParts(self:int,inc:int=0):
@@ -733,11 +737,17 @@ class PaperManager(JsonCacheManager):
         paper_lod=self.load_lod("papers")
         msg=f"{len(paper_lod)} papers"
         profiler.time(msg) 
+        profiler=Profiler("Loading dblp paper metadata ...",profile=verbose)
         paper_dblp_lod=self.load_lod("papers_dblp")
         msg=f"{len(paper_dblp_lod)} dblp indexed papers"
         profiler.time(msg) 
+        profiler=Profiler("Linking papers and volumes...",profile=verbose)
         self.papers_by_id={}
         self.paper_records_by_path={}
+        self.paper_dblp_by_path={}
+        for _index,dblp_record in enumerate(paper_dblp_lod):
+            pdf_id=dblp_record["pdf_id"]
+            self.paper_dblp_by_path[pdf_id]
         self.papers_by_path={}
         for _index,paper_record in enumerate(paper_lod):
             pdf_name=paper_record["pdf_name"]
@@ -761,6 +771,6 @@ class PaperManager(JsonCacheManager):
                 self.paper_records_by_path[pdf_path]=paper_record
             except Exception as ex:
                 print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")
-        msg=f"{len(self.papers_by_path)} papers"
+        msg=f"{len(self.papers_by_path)} papers linked to volumes"
         profiler.time(msg)    
         
