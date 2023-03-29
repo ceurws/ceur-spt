@@ -125,7 +125,6 @@ class Paper(ceurspt.ceurws_base.Paper):
                     wd_id=author_record["wikidata_id"]
                     orcid=author_record["orcid_id"]
                     gnd_id=author_record["gnd_id"]
-                    pass
                     icon_list = [
                     {
                         "src": "/static/icons/32px-dblp-icon.png", 
@@ -162,7 +161,7 @@ class Paper(ceurspt.ceurws_base.Paper):
                     link_tags=Volume.create_icon_list(soup, icon_list)
                     red=not wd_id and not dblp_url and not gnd_id and not orcid
                     style="color:red" if red else ""
-                    html=f"""<span style="{style}">{name}"""
+                    html+=f"""<span style="{style}">{name}"""
                     for link_tag in link_tags:
                         html+=str(link_tag)
                     html+="</span>"
