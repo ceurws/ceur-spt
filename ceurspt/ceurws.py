@@ -744,10 +744,6 @@ class PaperManager(JsonCacheManager):
         profiler=Profiler("Linking papers and volumes...",profile=verbose)
         self.papers_by_id={}
         self.paper_records_by_path={}
-        self.paper_dblp_by_path={}
-        for _index,dblp_record in enumerate(paper_dblp_lod):
-            pdf_id=dblp_record["pdf_id"]
-            self.paper_dblp_by_path[pdf_id]
         self.papers_by_path={}
         for _index,paper_record in enumerate(paper_lod):
             pdf_name=paper_record["pdf_name"]
@@ -771,6 +767,10 @@ class PaperManager(JsonCacheManager):
                 self.paper_records_by_path[pdf_path]=paper_record
             except Exception as ex:
                 print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")
+        self.paper_dblp_by_path={}
+        for _index,dblp_record in enumerate(paper_dblp_lod):
+            pdf_id=dblp_record["pdf_id"]
+            self.paper_dblp_by_path[f"{pdf_id}.pdf"]=dblp_record        
         msg=f"{len(self.papers_by_path)} papers linked to volumes"
         profiler.time(msg)    
         
