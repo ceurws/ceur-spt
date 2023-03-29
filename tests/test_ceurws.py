@@ -122,4 +122,13 @@ class Test_CEURWS(BaseSptTest):
         debug=True
         if debug:
             print(json.dumps(paper_dict,indent=2))
-        
+
+    def test_get_empty_volume_page(self):
+        """
+        tests get_empty_volume_page
+        """
+        vol = self.vm.getVolume(3262)
+        content = vol.get_empty_volume_page()
+        self.assertIn("Vol-3261", content)
+        self.assertIn("Vol-3262", content)
+        self.assertIn("Vol-3263", content)

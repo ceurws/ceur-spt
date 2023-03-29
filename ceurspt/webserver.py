@@ -6,7 +6,7 @@ Created on 2023-03-17
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse,Response,RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from ceurspt.ceurws import Volume,VolumeManager, Paper,PaperManager
+from ceurspt.ceurws import Volume, VolumeManager, Paper,PaperManager
 
 class WebServer:
     """
@@ -118,16 +118,20 @@ class WebServer:
             response = RedirectResponse(url=url,status_code=302)
             return response
         
-    def volumeHtml(self,number:int,ext:str=".pdf"):
-            """
-            get html Response for the given volume by number
-            """
-            vol=self.getVolume(number)
-            if vol:
-                content=vol.getHtml(ext=ext,fixLinks=True)
-                return HTMLResponse(content=content, status_code=200)
-            else:
-                return HTMLResponse(content=f"unknown volume number {number}",status_code=404)
+    def volumeHtml(self, number: int, ext: str = ".pdf") -> HTMLResponse:
+        """
+        get html Response for the given volume by number
+        Args:
+            number: volume number
+            ext: file extension
+        """
+        vol = self.getVolume(number)
+        if vol:
+            content = vol.getHtml(ext=ext, fixLinks=True)
+            return HTMLResponse(content=content, status_code=200)
+        else:
+            content = vol.get_empty_volume_page()
+            return HTMLResponse(content=content, status_code=200)
         
     def getVolume(self,number:int)->Volume:
         """
