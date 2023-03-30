@@ -820,7 +820,7 @@ class JsonCacheManager():
         
     def json_path(self,lod_name:str)->str:
         """
-        get the json pasth for the given list of dicts name
+        get the json path for the given list of dicts name
         
         Args:
             lod_name(str): the name of the list of dicts cache to read

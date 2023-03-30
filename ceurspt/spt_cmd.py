@@ -7,6 +7,8 @@ from argparse import ArgumentParser, Namespace
 from argparse import RawDescriptionHelpFormatter
 from ceurspt.version import Version
 from ceurspt.webserver import WebServer
+from ceurspt.profiler import Profiler
+from ceurspt.ceurws import JsonCacheManager
 import socket
 import sys
 import traceback
@@ -72,18 +74,24 @@ class CeurSptCmd:
         Args:
             args(Arguments): command line arguments
         """
-        vm=VolumeManager(base_path=args.basepath,base_url=args.baseurl)
-        vm.getVolumes(args.verbose)
-        pm=PaperManager(base_url=args.baseurl)
-        pm.getPapers(vm,args.verbose)
-        return vm,pm
+        jcm=JsonCacheManager(base_url=args.base_url)
+        for lod_name in ["volumes","papers","proceedings","papers_dblp"]:
+            profiler=Profiler(f"read {lod_name}",profile=True)
+            lod=jcm.load_lod(lod_name)    
+            _elapsed=profiler.time(f"read {len(lod)} {lod_name}")
+            jcm.store(lod_name,lod)
+            profiler=Profiler(f"store {lod_name}",profile=True)
+            _elapsed=profiler.time(f"store {len(lod)} {lod_name}")
         
     def start(self, args: Namespace):
         """
         Args:
             args(Arguments): command line arguments
         """
-        vm,pm=self.recreate(args)
+        vm=VolumeManager(base_path=args.basepath,base_url=args.baseurl)
+        vm.getVolumes(args.verbose)
+        pm=PaperManager(base_url=args.baseurl)
+        pm.getPapers(vm,args.verbose)
         ws = WebServer(vm,pm)
         uvicorn.run(ws.app, host=args.host, port=args.port)
 
