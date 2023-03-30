@@ -258,7 +258,7 @@ LAST|P50|{author.wikidata_id}|P1545|"{index+1}"
             }]
             soup=BeautifulSoup("<html></html>", 'html.parser')
             link_tags=Volume.create_icon_list(soup, icon_list)
-            red=not author.wikidata_id and not author.dblp_url and not author.gnd_id and not author.orcid_id
+            red=not author.wikidata_id and not author.dblp_author_id and not author.gnd_id and not author.orcid_id
             style="color:red" if red else ""
             html+=f"""<span style="{style}">{author.label}"""
             for link_tag in link_tags:
@@ -1032,7 +1032,7 @@ class PaperManager(JsonCacheManager):
                 self.papers_by_path[pdf_path]=paper
                 self.paper_records_by_path[pdf_path]=paper_record
             except Exception as ex:
-                print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}")
+                print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}",flush=True)
         self.paper_dblp_by_path={}
         for _index,dblp_record in enumerate(paper_dblp_lod):
             pdf_id=dblp_record["pdf_id"]

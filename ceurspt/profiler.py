@@ -21,7 +21,7 @@ class Profiler:
         self.profile = profile
         self.starttime = time.time()
         if profile:
-            print(f"Starting {msg} ...")
+            print(f"Starting {msg} ...",flush=True)
 
     def time(self, extraMsg=""):
         '''
@@ -29,5 +29,5 @@ class Profiler:
         '''
         elapsed = time.time() - self.starttime
         if self.profile:
-            print(f"{self.msg}{extraMsg} took {elapsed:5.1f} s")
+            print(f"{self.msg}{extraMsg} took {elapsed:5.1f} s",flush=True)
         return elapsed
