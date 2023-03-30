@@ -116,17 +116,17 @@ class Paper(ceurspt.ceurws_base.Paper):
         qs=f"""# created by {__file__}
 CREATE
 # P31  :instance of  Q13442814:scholarly article
-LAST    P31    Q13442814
+LAST|P31|Q13442814
 # P1433: published in 
-LAST    P1433    {self.volume.wikidataid}
+LAST|P1433|{self.volume.wikidataid}
 # english label
-LAST    Len    "{self.title}"
+LAST|Len|"{self.title}"
 # P1476:title
-LAST    P1476  en:"{self.title}"
+LAST|P1476|en:"{self.title}"
 # P407 :language of work or name  Q1860:English
-LAST    P407    Q1860
+LAST|P407|Q1860
 # P953 :full work available at URL
-LAST    P953    "{self.pdfUrl}"
+LAST|P953|"{self.pdfUrl}"
 """
         pass
         return qs
@@ -571,6 +571,12 @@ class Volume(ceurspt.ceurws_base.Volume):
                 "valid":self.wd_event_series 
             },
             {
+                "src": "/static/icons/32px-SMW-icon.png", 
+                "title": "SMW markup", 
+                "link":f"/Vol-{self.number}.smw", 
+                "valid":True
+            },
+            {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
                 "title": "JSON metadata", 
                 "link":f"/Vol-{self.number}.json", 
@@ -685,6 +691,29 @@ class Volume(ceurspt.ceurws_base.Volume):
         except Exception as ex:
             err_html=f"""<span style="color:red">reading {index_path} for Volume {self.number} failed: {str(ex)}</span>"""
             return err_html
+        
+    def as_smw_markup(self)->str:
+        """
+        return my semantic mediawiki markup
+        """
+        markup=f"""
+        =Volume=
+{{{{Volume
+|number={self.number}
+|storemode=property
+|wikidataid={self.wikidataid}
+|title={self.title}
+|acronym={self.acronym}
+|url={self.url}
+|date={self.date}
+"""
+        for attr in ["dblp","k10plus"]:
+            value=getattr(self,attr)
+            if value:
+                markup+=f"|{attr}={value}\n"
+        markup+=f"""|urn=urn:nbn:de:0074-1155-8
+}}}}"""
+        return markup
     
 class JsonCacheManager():
     """

@@ -56,6 +56,18 @@ class Test_CEURWS(BaseSptTest):
         debug=True
         if debug:
             print(json.dumps(vol_record,indent=2))
+            
+    def test_volume_as_smw_markup(self):
+        """
+        https://github.com/ceurws/ceur-spt/issues/21
+        """
+        volume=self.vm.getVolume(3262)
+        markup=volume.as_smw_markup()
+        debug=self.debug
+        debug=True
+        if debug:
+            print(markup)
+        self.assertTrue("|wikidataid=Q115053286" in markup)
     
     def test_volume_as_html(self):
         """

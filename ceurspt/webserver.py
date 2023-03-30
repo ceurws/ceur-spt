@@ -91,6 +91,18 @@ class WebServer:
             xml=paper.getContentByPostfix(".cermine.xml")
             return Response(content=xml, media_type="application/xml")
     
+        @self.app.get("/Vol-{number:int}.smw")
+        async def volumeSMW(number: int):
+            """
+            Get semantic media wiki markup of volume by given id
+            """
+            vol=self.getVolume(number)
+            if vol:
+                markup=vol.as_smw_markup()
+            else:
+                markup=f"{{{{Volume|number={number}}}}}"
+            return PlainTextResponse(markup)
+            
         @self.app.get("/Vol-{number:int}.json")
         async def volumeJson(number: int):
             """
