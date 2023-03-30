@@ -175,7 +175,14 @@ LAST|P50|{author.wikidata_id}|P1545|"{index+1}"
                 value=getattr(self,attr)
                 if value:
                     markup+=f"|{attr}={value}\n"
-        markup+=f"""}}}}"""
+        markup+=f"""}}}}
+=={self.title}==
+<pdf width="1500px">{self.pdfUrl}</pdf>
+<pre>
+{self.getText()}
+</pre>
+        """
+        
         return markup
     
     def getAuthorIndex(self,name:str,authors:typing.List[str]):
@@ -212,7 +219,7 @@ LAST|P50|{author.wikidata_id}|P1545|"{index+1}"
         else:
             sorted_authors=[]
             for author_name in author_names:
-                scholar=Scholar(label=author_name)
+                scholar=Scholar(dblp_author_id=None,label=author_name)
                 scholar.name=author_name
                 sorted_authors.append(scholar)
         return sorted_authors
