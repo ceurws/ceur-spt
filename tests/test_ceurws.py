@@ -147,6 +147,18 @@ class Test_CEURWS(BaseSptTest):
         if debug:
             print(json.dumps(paper_dict,indent=2))
             
+    def test_as_wb(self):
+        """
+        https://github.com/ceurws/ceur-spt/issues/23
+        """
+        paper=self.pm.getPaper(3197, "paper2")
+        wb=paper.as_wb_dict()
+        debug=self.debug
+        debug=True
+        if debug:
+            print(json.dumps(wb,indent=2))
+        
+            
     def test_paper_as_quickstatements(self):
         """
         https://github.com/ceurws/ceur-spt/issues/20

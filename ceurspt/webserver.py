@@ -46,6 +46,15 @@ class WebServer:
             paper_dict=paper.getMergedDict()
             return paper_dict
         
+        @self.app.get("/Vol-{number:int}/{pdf_name}.wbjson")
+        async def paperWikibaseCliJson(number:int,pdf_name:str):
+            """
+            get the json response to the wikibase-cli for the given paper
+            """
+            paper=self.getPaper(number,pdf_name)
+            paper_dict=paper.as_wb_dict()
+            return paper_dict
+        
         @self.app.get("/Vol-{number:int}/{pdf_name}.html")
         async def paperHtml(number:int,pdf_name:str):
             """

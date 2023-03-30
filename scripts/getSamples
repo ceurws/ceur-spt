@@ -40,6 +40,8 @@ usage() {
   echo "usage: $0 [-h|--help][--ceurws]"
   echo "  -h|--help: show this usage"
   echo "  -p|--papers: mine paper details"
+  echo "  -t|--text: extract text from papers"
+  echo "  -v|--volume: set volume number"
   echo "  --ceurws: force getting samples for CEURWS and exit"
 }
 

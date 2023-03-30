@@ -115,6 +115,54 @@ class Paper(ceurspt.ceurws_base.Paper):
                 m_dict[f"dblp.{key}"]=value
         return m_dict
     
+    def as_wb_dict(self)->dict:
+        """
+        wb create-entity '{"labels":{"en":"a label","fr":"un label"},"descriptions":{"en":"some description","fr":"une description"},"claims":{"P1775":["Q3576110","Q12206942"],"P2002":"bulgroz"}}'
+        """
+        wb={
+          "labels": { "en": self.title
+          },
+          "descriptions": { "en": f"scientific paper published in CEUR-WS Volume {self.volume.number}"
+          },
+          "claims":{
+              # P31  :instance of  Q13442814:scholarly article
+              "P31": "Q13442814",
+              #  P1433: published in 
+              "P1433": self.volume.wikidataid,
+              # P1476:title
+              "P1476": {
+                  "text": self.title,
+                  "language": "en"
+              },
+              # P407 :language of work or name  Q1860:English
+              "P407": "Q1860",
+              #  P953 :full work available at URL
+              "P953": self.pdfUrl,
+              # P50: author, P1545: series ordinal
+              "P50": [],
+              # P2093: author name string, P1545: series ordinal
+              "P2093": []
+          }
+        }
+        author_claims=wb["claims"]["P50"]
+        author_name_claims=wb["claims"]["P2093"]
+        authors=self.getAuthors()
+        for index,author in enumerate(authors):
+            if not author.wikidata_id:
+                author_name_claims.append({
+                  "value": author.name,
+                  "qualifiers": {
+                    "P1545": f"{index+1}"
+                  }})
+            else:
+                author_claims.append({
+                  "value": author.wikidata_id,
+                  "qualifiers": {
+                    "P1545": f"{index+1}"
+                  }})
+        return wb
+         
+    
     def as_quickstatements(self)->str:
         """
         return my quickstatements
@@ -382,9 +430,15 @@ LAST|P50|{author.wikidata_id}|P1545|"{index+1}"
                 "valid":True
             },
             {
+                "src": "/static/icons/32px-wbjson-icon.png",
+                "title": "wikibase CLI JSON metadata", 
+                "link":f"/{pdf_name}.wbjson", 
+                "valid":True
+            },   
+            {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
                 "title": "JSON metadata", 
-                "link":f"/{self.id}.json", 
+                "link":f"/{pdf_name}.json", 
                 "valid":True
             }
         ]
