@@ -64,7 +64,7 @@ class Test_CEURWS(BaseSptTest):
         volume=self.vm.getVolume(3262)
         markup=volume.as_smw_markup()
         debug=self.debug
-        debug=True
+        #debug=True
         if debug:
             print(markup)
         self.assertTrue("|wikidataid=Q115053286" in markup)
@@ -145,6 +145,19 @@ class Test_CEURWS(BaseSptTest):
         debug=True
         if debug:
             print(qs)
+            
+    def test_paper_as_smw_markup(self):
+        """
+        https://github.com/ceurws/ceur-spt/issues/22
+        """
+        paper=self.pm.getPaper(3262, "paper1")
+        markup=paper.as_smw_markup()
+        debug=self.debug
+        debug=True
+        if debug:
+            print(markup)
+        self.assertTrue("|dblpUrl=https://dblp.org/rec/conf/semweb/FerrantiPSA22" in markup)
+        
 
     def test_get_empty_volume_page(self):
         """

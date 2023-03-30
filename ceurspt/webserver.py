@@ -64,6 +64,20 @@ class WebServer:
             text=paper.getText()
             return PlainTextResponse(text)
         
+        @self.app.get("/Vol-{number:int}/{pdf_name}.smw")
+        async def paperSMW(number:int,pdf_name:str):
+            """
+            Get semantic media wiki markup of the given paper            """
+            paper=self.getPaper(number,pdf_name)
+            if paper:
+                markup=paper.as_smw_markup()
+            else:
+                markup=f"""{{{{Paper
+|id=Vol-{number}/{pdf_name}
+|volume=Vol-{number}
+}}}}"""
+            return PlainTextResponse(markup)
+        
         @self.app.get("/Vol-{number:int}/{pdf_name}.qs")
         async def paperQuickStatementns(number:int,pdf_name:str):
             """

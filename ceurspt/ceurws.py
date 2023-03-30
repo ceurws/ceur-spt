@@ -131,6 +131,33 @@ LAST|P953|"{self.pdfUrl}"
         pass
         return qs
     
+    def as_smw_markup(self)->str:
+        """
+        return my semantic mediawiki markup
+        
+        Returns:
+            str: the smw markup for this paper
+        """
+        m_dict=self.getMergedDict()
+        self.authors=m_dict["cvb.authors"]
+        if "dblp.dblp_publication_id" in m_dict:
+            self.dblpUrl=m_dict["dblp.dblp_publication_id"]
+        markup=f"""=Paper=
+{{{{Paper
+|id={self.id}
+|storemode=property
+|title={self.title}
+|pdfUrl={self.pdfUrl}
+|volume=Vol-{self.volume.number}
+"""
+        for attr in ["authors","wikidataid","dblpUrl"]:
+            if hasattr(self, attr):
+                value=getattr(self,attr)
+                if value:
+                    markup+=f"|{attr}={value}\n"
+        markup+=f"""}}}}"""
+        return markup
+    
     def getAuthorBar(self):
         """
         show the authors of this paper
@@ -286,6 +313,12 @@ LAST|P953|"{self.pdfUrl}"
                 "title": "Quickstatements", 
                 "link":f"/{pdf_name}.qs", 
                 "valid": True # @TODO - add check for existing wikidata entry
+            },
+            {
+                "src": "/static/icons/32px-SMW-icon.png", 
+                "title": "SMW markup", 
+                "link":f"/{pdf_name}.smw", 
+                "valid":True
             },
             {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
@@ -695,9 +728,11 @@ class Volume(ceurspt.ceurws_base.Volume):
     def as_smw_markup(self)->str:
         """
         return my semantic mediawiki markup
+        
+        Returns:
+            str: the smw markup for this volume
         """
-        markup=f"""
-        =Volume=
+        markup=f"""=Volume=
 {{{{Volume
 |number={self.number}
 |storemode=property
