@@ -76,13 +76,13 @@ class CeurSptCmd:
         """
         jcm=JsonCacheManager(base_url=args.baseurl)
         for lod_name in ["volumes","papers","proceedings","papers_dblp"]:
-            profiler=Profiler(f"read {lod_name}",profile=True)
+            profiler=Profiler(f"read {lod_name} ...",profile=True)
             lod=jcm.load_lod(lod_name)    
-            _elapsed=profiler.time(f"read {len(lod)} {lod_name}")
+            _elapsed=profiler.time(f" read {len(lod)} {lod_name}")
             jcm.store(lod_name,lod)
-            profiler=Profiler(f"store {lod_name}",profile=True)
-            _elapsed=profiler.time(f"store {len(lod)} {lod_name}")
-        
+            profiler=Profiler(f"store {lod_name} ...",profile=True)
+            _elapsed=profiler.time(f" store {len(lod)} {lod_name}")
+         
     def start(self, args: Namespace):
         """
         Args:

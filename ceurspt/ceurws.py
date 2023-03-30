@@ -120,6 +120,9 @@ class Paper(ceurspt.ceurws_base.Paper):
         return my quickstatements
         """
         m_dict=self.getMergedDict()
+        paper_date_str=self.volume.date
+        paper_date=datetime.strptime(paper_date_str, "%Y-%m-%d")
+        qs_date=f"+{paper_date.isoformat(sep='T',timespec='auto')}Z/11"        
         qs=f"""# created by {__file__}
 CREATE
 # P31  :instance of  Q13442814:scholarly article
@@ -128,6 +131,8 @@ LAST|P31|Q13442814
 LAST|P1433|{self.volume.wikidataid}
 # english label
 LAST|Len|"{self.title}"
+# english description
+LAST|Den|"scientific paper published in CEUR-WS Volume {self.volume.number}"
 # P1476:title
 LAST|P1476|en:"{self.title}"
 # P407 :language of work or name  Q1860:English
@@ -135,7 +140,7 @@ LAST|P407|Q1860
 # P953 :full work available at URL
 LAST|P953|"{self.pdfUrl}"
 # P577 :publication date
-LAST|P577|{self.volume.date}
+LAST|P577|{qs_date}
 """
         # @TODO pages ...
         authors=self.getAuthors()
