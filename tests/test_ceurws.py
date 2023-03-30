@@ -122,6 +122,17 @@ class Test_CEURWS(BaseSptTest):
         debug=True
         if debug:
             print(json.dumps(paper_dict,indent=2))
+            
+    def test_paper_as_quickstatements(self):
+        """
+        https://github.com/ceurws/ceur-spt/issues/20
+        """
+        paper=self.pm.getPaper(3262, "paper1")
+        qs=paper.as_quickstatements()
+        debug=self.debug
+        debug=True
+        if debug:
+            print(qs)
 
     def test_get_empty_volume_page(self):
         """

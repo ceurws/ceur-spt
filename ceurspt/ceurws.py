@@ -108,6 +108,29 @@ class Paper(ceurspt.ceurws_base.Paper):
                 m_dict[f"dblp.{key}"]=value
         return m_dict
     
+    def as_quickstatements(self)->str:
+        """
+        return my quickstatements
+        """
+        m_dict=self.getMergedDict()
+        qs=f"""# created by {__file__}
+CREATE
+# P31  :instance of  Q13442814:scholarly article
+LAST    P31    Q13442814
+# P1433: published in 
+LAST    P1433    {self.volume.wikidataid}
+# english label
+LAST    Len    "{self.title}"
+# P1476:title
+LAST    P1476  en:"{self.title}"
+# P407 :language of work or name  Q1860:English
+LAST    P407    Q1860
+# P953 :full work available at URL
+LAST    P953    "{self.pdfUrl}"
+"""
+        pass
+        return qs
+    
     def getAuthorBar(self):
         """
         show the authors of this paper
@@ -257,6 +280,12 @@ class Paper(ceurspt.ceurws_base.Paper):
                 "title": "GROBID metadata", 
                 "link":f"/{pdf_name}.grobid", 
                 "valid": self.getContentPathByPostfix(".grobid")
+            },
+            {
+                "src": "/static/icons/32px-QuickStatements-icon.png",
+                "title": "Quickstatements", 
+                "link":f"/{pdf_name}.qs", 
+                "valid": True # @TODO - add check for existing wikidata entry
             },
             {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 

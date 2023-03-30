@@ -64,6 +64,15 @@ class WebServer:
             text=paper.getText()
             return PlainTextResponse(text)
         
+        @self.app.get("/Vol-{number:int}/{pdf_name}.qs")
+        async def paperQuickStatementns(number:int,pdf_name:str):
+            """
+            get the quickstatements for the given paper
+            """
+            paper=self.getPaper(number,pdf_name)
+            qs=paper.as_quickstatements()
+            return PlainTextResponse(qs)
+        
         @self.app.get("/Vol-{number:int}/{pdf_name}.grobid")
         async def paperGrobidXml(number:int,pdf_name:str):
             """
