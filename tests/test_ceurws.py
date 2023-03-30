@@ -111,6 +111,18 @@ class Test_CEURWS(BaseSptTest):
         self.assertTrue("Towards improving Wikidata reuse with emerging patterns" in html)
         self.assertTrue(scroll_link in html)
         
+    def test_authors(self):
+        """
+        test getting the authors for a paper
+        """
+        paper=self.pm.getPaper(3262,"paper2")
+        authors=paper.getAuthors() 
+        debug=self.debug
+        debug=True
+        if debug:
+            for i,author in enumerate(authors):
+                print (f"{i}:{author}")
+        
     def test_author_bar(self):
         """
         test getting author bar html for a paper
@@ -145,6 +157,7 @@ class Test_CEURWS(BaseSptTest):
         debug=True
         if debug:
             print(qs)
+        self.assertTrue('''LAST|P2093|"Nicolas Ferranti"|P1545|"1"''' in qs)
             
     def test_paper_as_smw_markup(self):
         """

@@ -4,10 +4,12 @@ Created on 2023-03-18
 @author: wf
 '''
 import ceurspt.ceurws_base
+import ceurspt.models.dblp
 
 from bs4 import BeautifulSoup
 from ceurspt.profiler import Profiler
 from ceurspt.version import Version
+from ceurspt.dataclass_util import DataClassUtil
 from datetime import datetime
 from pathlib import Path
 
@@ -16,6 +18,11 @@ import dataclasses
 import orjson
 import os
 import typing
+
+class Scholar(ceurspt.models.dblp.DblpScholar):
+    """
+    a scholar
+    """
 
 class Paper(ceurspt.ceurws_base.Paper):
     """
@@ -127,8 +134,21 @@ LAST|P1476|en:"{self.title}"
 LAST|P407|Q1860
 # P953 :full work available at URL
 LAST|P953|"{self.pdfUrl}"
+# P577 :publication date
+LAST|P577|{self.volume.date}
 """
-        pass
+        # @TODO pages ...
+        authors=self.getAuthors()
+        for index,author in enumerate(authors):
+            if not author.wikidata_id:
+                qs+=f"""# P2093: author name string, P1545: series ordinal
+LAST|P2093|"{author.name}"|P1545|"{index+1}"
+"""
+            else:
+                qs+=f"""# P50: author, P1545: series ordinal
+LAST|P50|{author.wikidata_id}|P1545|"{index+1}"       
+"""
+            pass
         return qs
     
     def as_smw_markup(self)->str:
@@ -158,64 +178,93 @@ LAST|P953|"{self.pdfUrl}"
         markup+=f"""}}}}"""
         return markup
     
+    def getAuthorIndex(self,name:str,authors:typing.List[str]):
+        """
+        get the author index
+        """
+        for i,aname in enumerate(authors):
+            if name.lower().startswith(aname.lower()):
+                return i
+        # if not found put at end
+        return len(authors)+1
+    
+    def getAuthors(self)->typing.List[Scholar]:
+        """
+        get my authors
+        
+        Returns:
+            list: a list of Scholars
+        """
+        m_dict=self.getMergedDict()
+        author_names=m_dict["cvb.authors"].split(",")
+        if "dblp.authors" in m_dict:
+            authors=[]
+            dblp_author_records=m_dict["dblp.authors"]
+            for dblp_author_record in dblp_author_records:
+                author=DataClassUtil.dataclass_from_dict(Scholar,dblp_author_record)
+                authors.append(author)
+                author.index=self.getAuthorIndex(author.label, author_names)
+                if author.index<len(author_names):
+                    author.name=author_names[author.index]
+                else:
+                    author.name=author.label
+            sorted_authors=sorted(authors, key=lambda author:author.index)
+        else:
+            sorted_authors=[]
+            for author_name in author_names:
+                scholar=Scholar(label=author_name)
+                scholar.name=author_name
+                sorted_authors.append(scholar)
+        return sorted_authors
+    
     def getAuthorBar(self):
         """
         show the authors of this paper
         """
-        m_dict=self.getMergedDict()
-        authors=m_dict["cvb.authors"]
-        html=f"{authors}"
-        if "dblp.authors" in m_dict:
-            dblp_authors=m_dict["dblp.authors"]
-            if len(dblp_authors)>0:
-                html=""
-                for author_record in dblp_authors:
-                    dblp_url=author_record["dblp_author_id"]
-                    name=author_record["label"]
-                    wd_id=author_record["wikidata_id"]
-                    orcid=author_record["orcid_id"]
-                    gnd_id=author_record["gnd_id"]
-                    icon_list = [
-                    {
-                        "src": "/static/icons/32px-dblp-icon.png", 
-                        "title": "dblp",
-                        "link":f"{dblp_url}",
-                        "valid":dblp_url
-                    },
-                    {
-                        "src": "/static/icons/32px-ORCID-icon.png", 
-                        "title": "ORCID",
-                        "link":f"https://orcid.org/{orcid}",
-                        "valid":orcid
-                    },
-                    {
-                        "src": "/static/icons/32px-DNB.svg.png",
-                        "title":"DNB",
-                        "link":f"https://portal.dnb.de/opac.htm?method=simpleSearch&cqlMode=true&query=nid%253D{gnd_id}",
-                        "valid":gnd_id
-                    },
-                    {
-                        "src": "/static/icons/32px-Scholia_logo.svg.png", 
-                        "title": "Author@scholia",
-                        "link":f"https://scholia.toolforge.org/author/{wd_id}", 
-                        "valid":wd_id 
-                    },
-                   
-                    {
-                        "src": "/static/icons/32px-Wikidata_Query_Service_Favicon_wbg.svg.png", 
-                        "title": "Author@wikidata", 
-                        "link":f"https://www.wikidata.org/wiki/{wd_id}", 
-                        "valid":wd_id
-                    }]
-                    soup=BeautifulSoup("<html></html>", 'html.parser')
-                    link_tags=Volume.create_icon_list(soup, icon_list)
-                    red=not wd_id and not dblp_url and not gnd_id and not orcid
-                    style="color:red" if red else ""
-                    html+=f"""<span style="{style}">{name}"""
-                    for link_tag in link_tags:
-                        html+=str(link_tag)
-                    html+="</span>"
-                    pass
+        authors=self.getAuthors()
+        html=""
+        for author in authors:
+            icon_list = [
+            {
+                "src": "/static/icons/32px-dblp-icon.png", 
+                "title": "dblp",
+                "link":f"{author.dblp_author_id}",
+                "valid":author.dblp_author_id
+            },
+            {
+                "src": "/static/icons/32px-ORCID-icon.png", 
+                "title": "ORCID",
+                "link":f"https://orcid.org/{author.orcid_id}",
+                "valid":author.orcid_id
+            },
+            {
+                "src": "/static/icons/32px-DNB.svg.png",
+                "title":"DNB",
+                "link":f"https://d-nb.info/gnd/{author.gnd_id}",
+                "valid":author.gnd_id
+            },
+            {
+                "src": "/static/icons/32px-Scholia_logo.svg.png", 
+                "title": "Author@scholia",
+                "link":f"https://scholia.toolforge.org/author/{author.wikidata_id}", 
+                "valid":author.wikidata_id
+            },
+           
+            {
+                "src": "/static/icons/32px-Wikidata_Query_Service_Favicon_wbg.svg.png", 
+                "title": "Author@wikidata", 
+                "link":f"https://www.wikidata.org/wiki/{author.wikidata_id}", 
+                "valid":author.wikidata_id
+            }]
+            soup=BeautifulSoup("<html></html>", 'html.parser')
+            link_tags=Volume.create_icon_list(soup, icon_list)
+            red=not author.wikidata_id and not author.dblp_url and not author.gnd_id and not author.orcid_id
+            style="color:red" if red else ""
+            html+=f"""<span style="{style}">{author.label}"""
+            for link_tag in link_tags:
+                html+=str(link_tag)
+            html+="</span>"
+            pass
         return html
     
     def paperLinkParts(self:int,inc:int=0):
