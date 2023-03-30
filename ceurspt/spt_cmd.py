@@ -74,7 +74,7 @@ class CeurSptCmd:
         Args:
             args(Arguments): command line arguments
         """
-        jcm=JsonCacheManager(base_url=args.base_url)
+        jcm=JsonCacheManager(base_url=args.baseurl)
         for lod_name in ["volumes","papers","proceedings","papers_dblp"]:
             profiler=Profiler(f"read {lod_name}",profile=True)
             lod=jcm.load_lod(lod_name)    
