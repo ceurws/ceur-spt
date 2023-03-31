@@ -775,7 +775,7 @@ class Volume(ceurspt.ceurws_base.Volume):
             if next_link:
                 vol_tag.insert_after(next_link)
 
-    def get_empty_volume_page(self):
+    def get_empty_volume_page(self, content_html: str = None):
         """
         Get empty volume page
         """
@@ -786,7 +786,7 @@ class Volume(ceurspt.ceurws_base.Volume):
             <head>
             <meta http-equiv="Content-type" content="text/html;charset=utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link rel="stylesheet" type="text/css" href="../ceur-ws.css">
+            <link rel="stylesheet" type="text/css" href="/static/ceur-ws.css">
             </head>
             <!--CEURLANG=eng -->
             <body>
@@ -803,6 +803,7 @@ class Volume(ceurspt.ceurws_base.Volume):
             </td>
             </tr>
             </tbody></table>
+            {content_html}
             </body></html>
         """
         soup = BeautifulSoup(html_page, 'html.parser')
@@ -837,7 +838,8 @@ class Volume(ceurspt.ceurws_base.Volume):
             return content
         except Exception as ex:
             err_html=f"""<span style="color:red">reading {index_path} for Volume {self.number} failed: {str(ex)}</span>"""
-            return err_html
+            content = self.get_empty_volume_page(err_html)
+            return content
         
     def as_smw_markup(self)->str:
         """
