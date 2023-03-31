@@ -52,6 +52,16 @@ class Test_app(BaseSptTest):
         debug=True
         if debug:
             print(response.text)
+            
+    def test_index(self):
+        """
+        test the index html file
+        """
+        response=self.checkResponse("/index.html", 200)
+        html=response.text
+        debug=True
+        if debug:
+            print(html)
     
     def test_read_volume(self):
         """

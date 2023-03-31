@@ -235,7 +235,6 @@ LAST|P50|{author.wikidata_id}|P1545|"{index+1}"
 {self.getText()}
 </pre>
         """
-        
         return markup
     
     def getAuthorIndex(self,name:str,authors:typing.List[str]):
@@ -949,6 +948,98 @@ class VolumeManager(JsonCacheManager):
         """
         JsonCacheManager.__init__(self, base_url=base_url)
         self.base_path=base_path
+        
+    def head_table_html(self)->str:
+        """
+        """
+        html="""<table width="97%" cellspacing="5" cellpadding="0" border="0">
+<tbody><tr>
+<td valign="middle" align="left">
+<div id="CEURWSLOGO"></div>
+<!--<img alt="[25years CEUR-WS]" style="padding:4px; float:left;"  width="550" src="./CEUR-WS-logo-originals/2020/CEUR-WS-25anniversary.png"> -->
+</td>
+<td valign="middle" align="justify">
+<font size="-2" face="ARIAL,HELVETICA,VERDANA" color="#363636">
+
+<img alt="[OpenAccess]" style="padding:6px; float:left;" src="/static/OpenAccesslogo_200x313.png" width="18">
+CEUR Workshop Proceedings (CEUR-WS.org) is a
+<a href="https://ceur-ws.org/CEURWS-VALUES.html">free</a>
+<a href="http://www.sherpa.ac.uk/romeo/issn/1613-0073/">open-access</a>
+publication service
+at <a href="http://sunsite.informatik.rwth-aachen.de">Sun SITE Central Europe</a>
+operated under the umbrella of
+ <a href="http://www-i5.informatik.rwth-aachen.de">RWTH Aachen University</a>.
+CEUR-WS.org is a recognized ISSN publication series,
+<a href="https://ceur-ws.org/issn-1613-0073.html">ISSN 1613-0073</a> (<a href="https://portal.issn.org/resource/ISSN/1613-0073?format=json">json</a>).
+CEUR-WS.org is hosted at http://SunSITE.Informatik.RWTH-Aachen.DE/Publications/CEUR-WS/.
+This service is provided by
+the <b><a href="https://ceur-ws.org/CEURWS-TEAM.html">CEUR-WS.org Team</a></b>.
+See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRESSUM">Impressum</a>.
+</font>
+</td>
+</tr>
+</tbody></table>"""
+        return html
+        
+    def index_html(self,upper:int,lower:int)->str:
+        """
+        return an index going from the given upper volume number down to the given lower volume number
+        
+        Args:
+            upper(int): upper volume number to start with
+            lower(int): lower volume number to end with
+        
+        Returns:
+            html code for index
+        """
+        html=f"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "https://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head> 
+    <meta http-equiv="Content-Type" content="Type=text/html;charset=utf-8">
+    <meta name="description" content="CEUR-WS.org provides free online scientific papers">
+    <meta name="keywords" content="open access, open archive, free scientific paper, workshop proceedings, online publishing, computer science, information systems" >
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- automatically refresh daily-->
+    <meta http-equiv="expires" content="86400">
+    <link rel="stylesheet" type="text/css" href="/static/ceur-ws.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>CEUR-WS.org - CEUR Workshop Proceedings (free, open-access publishing, computer science/information systems)</title>
+    <link rel="shortcut icon" href="/static/ceur-ws.ico">
+  </head>
+  <body>
+     {self.head_table_html()}
+     <div>
+"""
+        # prepare the indexing
+        # get the volumes as a list from 1 - top e.g. 3365
+        volumes=list(self.volumes_by_number.values())
+        # reverse the list
+        volumes.reverse()
+        # make sure upper and lower values are valid
+        if upper is None:
+            upper=volumes[0].number
+        if lower is None:
+            lower=1
+        # loop over the reversed list
+        for vol_index in range(len(volumes)):
+            vol=volumes[vol_index]
+            vol_number=vol.number
+            if vol_number>upper:
+                continue
+            if vol_number<lower:
+                break
+            pass
+            html+=f"""       <div style='bgcolor:#DCDBD7'>
+         <b><a name='Vol-{vol_number}'>Vol-{vol_number}</a></b>
+         <a href='/Vol-{vol_number}'>{vol.title}</a>
+       </div>
+"""
+        html+="""    </div>
+  </body>
+</html"""
+        return html
         
     def getVolume(self,number:int):
         """

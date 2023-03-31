@@ -1,0 +1,8 @@
+#!/bin/bash
+# WF 2023-03-31
+# refresh the JSON cache files
+for cache_file in papers papers_dblp proceedings volumes
+do
+  rm $HOME/.ceurws/$cache_file.json
+done
+ceur-spt -rc

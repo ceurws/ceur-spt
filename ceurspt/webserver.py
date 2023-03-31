@@ -26,7 +26,16 @@ class WebServer:
         #https://fastapi.tiangolo.com/tutorial/static-files/
         self.app.mount("/static", StaticFiles(directory=static_directory), name="static")
         self.vm=vm
-        self.pm=pm
+        self.pm=pm    
+        
+        @self.app.get("/index.html/{upper:int}/{lower:int}")
+        async def index_html(upper:int,lower:int):
+            content=self.vm.index_html(upper=upper,lower=lower)
+            return HTMLResponse(content)
+        
+        @self.app.get("/index.html")
+        async def full_index_html():
+            return await index_html(upper=None,lower=None)
     
         @self.app.get("/Vol-{number:int}/{pdf_name:str}.pdf")
         async def paperPdf(number:int,pdf_name:str):
@@ -206,4 +215,3 @@ class WebServer:
         if paper is None and exceptionOnFail:
             raise HTTPException(status_code=404, detail=f"paper Vol-{number}/{pdf_name}.pdf not found")    
         return paper
-
