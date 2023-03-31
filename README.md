@@ -19,6 +19,7 @@ https://ceur-ws.org/
 - http://ceur-ws.bitplan.com
 
 ### Single Point of Truth
+- http://ceurspt.wikidata.dbis.rwth-aachen.de/index.html
 - http://ceurspt.wikidata.dbis.rwth-aachen.de/docs
 
 
