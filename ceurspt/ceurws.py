@@ -1033,7 +1033,7 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
             pass
             html+=f"""       <div style='bgcolor:#DCDBD7'>
          <b><a name='Vol-{vol_number}'>Vol-{vol_number}</a></b>
-         <a href='/Vol-{vol_number}'>{vol.title}</a>
+         <a href='/Vol-{vol_number}.html'>{vol.title}</a>
        </div>
 """
         html+="""    </div>
