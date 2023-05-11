@@ -1034,10 +1034,15 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
                 continue
             if vol_number<lower:
                 break
-            pass
-            html+=f"""       <div style='bgcolor:#DCDBD7'>
+            if isinstance(vol.title, str):
+                vol_title = escape(vol.title)
+            else:
+                vol_title = "Title missing (Might be one of the empty volumes)"
+            if vol_title is None:
+                pass
+            html += f"""       <div style='bgcolor:#DCDBD7'>
          <b><a name='Vol-{vol_number}'>Vol-{vol_number}</a></b>
-         <a href='/Vol-{vol_number}.html'>{escape(vol.title)}</a>
+         <a href='/Vol-{vol_number}.html'>{vol_title}</a>
        </div>
 """
         html+="""    </div>
