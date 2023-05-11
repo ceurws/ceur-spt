@@ -3,9 +3,12 @@ Created on 2023-03-18
 
 @author: wf
 '''
+import html
+
 from ceurspt.ceurws import Volume
 from tests.base_spt_test import BaseSptTest
 import json
+
 
 class Test_CEURWS(BaseSptTest):
     """
@@ -182,7 +185,6 @@ class Test_CEURWS(BaseSptTest):
         if debug:
             print(markup)
         self.assertTrue("|dblpUrl=https://dblp.org/rec/conf/semweb/FerrantiPSA22" in markup)
-        
 
     def test_get_empty_volume_page(self):
         """
@@ -193,3 +195,13 @@ class Test_CEURWS(BaseSptTest):
         self.assertIn("Vol-3261", content)
         self.assertIn("Vol-3262", content)
         self.assertIn("Vol-3263", content)
+
+    def test_issue_26_escaping_volume_title(self):
+        """
+        tests issue #26
+        escaping of volume titles
+        """
+        content = self.vm.index_html(3347, 3347)
+        problematic_acronym = "IT&I-2022"
+        self.assertNotIn(problematic_acronym, content)
+        self.assertIn(html.escape(problematic_acronym), content)

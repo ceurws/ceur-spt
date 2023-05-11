@@ -11,7 +11,9 @@ from ceurspt.profiler import Profiler
 from ceurspt.version import Version
 from ceurspt.dataclass_util import DataClassUtil
 from datetime import datetime
+from html import escape
 from pathlib import Path
+
 
 import urllib.request
 import dataclasses
@@ -1035,12 +1037,12 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
             pass
             html+=f"""       <div style='bgcolor:#DCDBD7'>
          <b><a name='Vol-{vol_number}'>Vol-{vol_number}</a></b>
-         <a href='/Vol-{vol_number}.html'>{vol.title}</a>
+         <a href='/Vol-{vol_number}.html'>{escape(vol.title)}</a>
        </div>
 """
         html+="""    </div>
   </body>
-</html"""
+</html>"""
         return html
         
     def getVolume(self,number:int):
