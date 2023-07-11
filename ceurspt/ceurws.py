@@ -13,7 +13,7 @@ from ceurspt.dataclass_util import DataClassUtil
 from datetime import datetime
 from html import escape
 from pathlib import Path
-
+from typing import Optional, Union, Dict, List
 
 import urllib.request
 import dataclasses
@@ -21,17 +21,19 @@ import orjson
 import os
 import typing
 
+
 class Scholar(ceurspt.models.dblp.DblpScholar):
     """
     a scholar
     """
+
 
 class Paper(ceurspt.ceurws_base.Paper):
     """
     a CEUR-WS Paper with it's behavior
     """
     
-    def getBasePath(self)->str:
+    def getBasePath(self) -> Optional[str]:
         """
         get the base path to my files
         """
@@ -43,7 +45,7 @@ class Paper(ceurspt.ceurws_base.Paper):
                 return base_path
         return None
     
-    def getContentPathByPostfix(self,postfix:str):
+    def getContentPathByPostfix(self, postfix: str):
         """
         get the content path for the given postfix
         
@@ -62,7 +64,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         else:
             return None
         
-    def getContentByPostfix(self,postfix:str)->str:
+    def getContentByPostfix(self, postfix: str) -> str:
         """
         get the content for the given postfix
         
@@ -94,7 +96,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         pdf=f"{base_path}.pdf"
         return pdf
     
-    def getMergedDict(self)->str:
+    def getMergedDict(self) -> dict:
         """
         get the merged dict for this paper
         """
@@ -496,35 +498,36 @@ Creative Commons License Attribution 4.0 International
         """
         return content
 
+
 class Volume(ceurspt.ceurws_base.Volume):
     """
     a CEUR-WS Volume with it's behavior
     """
-    def __init__(self,**kwargs):
-        ceurspt.ceurws_base.Volume.__init__(self,**kwargs)
-        self.papers=[]
+    def __init__(self, **kwargs):
+        ceurspt.ceurws_base.Volume.__init__(self, **kwargs)
+        self.papers = []
         
-    def getMergedDict(self)->dict:
+    def getMergedDict(self) -> dict:
         """
         get my merged dict
         
         Returns:
             dict
         """
-        my_dict=dataclasses.asdict(self)
-        m_dict={
+        my_dict = dataclasses.asdict(self)
+        m_dict = {
             "version.version": Version.version,
             "version.cm_url": Version.cm_url,
             "spt.html_url": f"/Vol-{self.number}.html"
         }
-        for key,value in my_dict.items():
-            m_dict[f"spt.{key}"]=value
-        volrecord=self.vm.getVolumeRecord(self.number)
-        for key,value in volrecord.items():
+        for key, value in my_dict.items():
+            m_dict[f"spt.{key}"] = value
+        volrecord = self.vm.getVolumeRecord(self.number)
+        for key, value in volrecord.items():
             if "." in key:
-                m_dict[f"{key}"]=value
+                m_dict[f"{key}"] = value
             else:
-                m_dict[f"cvb.{key}"]=value
+                m_dict[f"cvb.{key}"] = value
         return m_dict
         
     @classmethod
@@ -867,7 +870,8 @@ class Volume(ceurspt.ceurws_base.Volume):
         markup+=f"""|urn=urn:nbn:de:0074-1155-8
 }}}}"""
         return markup
-    
+
+
 class JsonCacheManager():
     """
     a json based cache manager
@@ -938,11 +942,12 @@ class JsonCacheManager():
             json_file.write(json_str)
             pass
 
+
 class VolumeManager(JsonCacheManager):
     """
     manage all volumes
     """
-    def __init__(self,base_path:str,base_url=str):
+    def __init__(self, base_path: str, base_url: str):
         """
         initialize me with the given base_path
     
@@ -951,12 +956,14 @@ class VolumeManager(JsonCacheManager):
             base_url(str): the url of the RESTFul metadata service
         """
         JsonCacheManager.__init__(self, base_url=base_url)
-        self.base_path=base_path
+        self.base_path = base_path
+        self.volumes_by_number: Dict[int, Volume] = {}
+        self.volume_records_by_number: Dict[int, dict] = {}
         
-    def head_table_html(self)->str:
+    def head_table_html(self) -> str:
         """
         """
-        html="""<table width="97%" cellspacing="5" cellpadding="0" border="0">
+        html = """<table width="97%" cellspacing="5" cellpadding="0" border="0">
 <tbody><tr>
 <td valign="middle" align="left">
 <div id="CEURWSLOGO"></div>
@@ -985,7 +992,7 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
 </tbody></table>"""
         return html
         
-    def index_html(self,upper:int,lower:int)->str:
+    def index_html(self, upper: Optional[int] = None, lower: Optional[int] = None) -> str:
         """
         return an index going from the given upper volume number down to the given lower volume number
         
@@ -996,7 +1003,7 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
         Returns:
             html code for index
         """
-        html=f"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        html = f"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "https://www.w3.org/TR/html4/loose.dtd">
 <html>
   <head> 
@@ -1050,7 +1057,7 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
 </html>"""
         return html
         
-    def getVolume(self,number:int):
+    def getVolume(self, number: int):
         """
         get my volume by volume number
         
@@ -1062,75 +1069,76 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
         else:
             return None
         
-    def getVolumeRecord(self, number:int):
+    def getVolumeRecord(self, number: int):
         if number in self.volume_records_by_number:
             return self.volume_records_by_number[number]
         else:
             return None
         
-    def getVolumes(self,verbose:bool=False):
+    def getVolumes(self, verbose: bool = False):
         """
         get my volumes
         
         Args:
             verbose(bool): if True show verbose loading information
         """
-        profiler=Profiler("Loading volumes",profile=verbose)
-        volume_lod=self.load_lod("volumes")
-        proceedings_lod=self.load_lod("proceedings")
-        self.volumes_by_number={}
-        self.volume_records_by_number={}
+        profiler = Profiler("Loading volumes",profile=verbose)
+        volume_lod = self.load_lod("volumes")
+        proceedings_lod = self.load_lod("proceedings")
+        self.volumes_by_number = {}
+        self.volume_records_by_number = {}
         for volume_record in volume_lod:
-            vol_number=volume_record["number"]
-            self.volume_records_by_number[vol_number]=volume_record
-            title=volume_record["title"]
-            pubDate_str=volume_record["pubDate"]
-            if pubDate_str:
-                pubDate=datetime.fromisoformat(pubDate_str).date()
+            vol_number = volume_record["number"]
+            self.volume_records_by_number[vol_number] = volume_record
+            title = volume_record["title"]
+            pub_date_str = volume_record["pubDate"]
+            if pub_date_str:
+                pub_date = datetime.fromisoformat(pub_date_str).date()
             else:
-                pubDate=None
-            acronym=volume_record["acronym"]
-            volume=Volume(number=vol_number,title=title,date=pubDate,acronym=acronym)
-            volume.vm=self
-            volume.number=int(volume.number)
-            vol_dir=f"{self.base_path}/Vol-{vol_number}"
+                pub_date = None
+            acronym = volume_record["acronym"]
+            volume = Volume(number=vol_number, title=title, date=pub_date, acronym=acronym)
+            volume.vm = self
+            volume.number = int(volume.number)
+            vol_dir = f"{self.base_path}/Vol-{vol_number}"
             if os.path.isdir(vol_dir):
-                volume.vol_dir=vol_dir
+                volume.vol_dir = vol_dir
             else:
-                volume.vol_dir=None
-            self.volumes_by_number[vol_number]=volume
+                volume.vol_dir = None
+            self.volumes_by_number[vol_number] = volume
         for proc_record in proceedings_lod:
-            number=proc_record["sVolume"]
-            volume_record=self.volume_records_by_number[number]
-            volume=self.volumes_by_number[number]
-            for key,value in proc_record.items():
-                volume_record[f"wd.{key}"]=value
-            map_pairs=[
-                ("item","wikidataid"),
-                ("itemDescription","description"),
-                ("dblpProceedingsId","dblp"),
-                ("described_at_URL","url"),
-                ("ppnId","k10plus"),
-                ("URN_NBN","urn")
+            number = proc_record["sVolume"]
+            volume_record = self.volume_records_by_number[number]
+            volume = self.volumes_by_number[number]
+            for key, value in proc_record.items():
+                volume_record[f"wd.{key}"] = value
+            map_pairs = [
+                ("item", "wikidataid"),
+                ("itemDescription", "description"),
+                ("dblpProceedingsId", "dblp"),
+                ("described_at_URL", "url"),
+                ("ppnId", "k10plus"),
+                ("URN_NBN", "urn")
             ]
-            for wd_id,attr in map_pairs:
-                wd_key=f"wd.{wd_id}"
+            for wd_id, attr in map_pairs:
+                wd_key = f"wd.{wd_id}"
                 if wd_key in volume_record:
-                    value=volume_record[wd_key]
-                    if isinstance(value,str):
-                        value=value.replace("http://www.wikidata.org/entity/","")
-                        value=value.replace("https://www.wikidata.org/wiki/","")
-                    setattr(volume,attr,value)
+                    value = volume_record[wd_key]
+                    if isinstance(value, str):
+                        value = value.replace("http://www.wikidata.org/entity/", "")
+                        value = value.replace("https://www.wikidata.org/wiki/", "")
+                    setattr(volume, attr, value)
                     pass
-        msg=f"{len(self.volumes_by_number)} volumes"
+        msg = f"{len(self.volumes_by_number)} volumes"
         profiler.time(msg)
-        
+
+
 class PaperManager(JsonCacheManager):
     """
     manage all papers
     """
     
-    def __init__(self,base_url:str):
+    def __init__(self, base_url: str):
         """
         constructor
         
@@ -1138,71 +1146,91 @@ class PaperManager(JsonCacheManager):
             base_url(str): the url of the RESTFul metadata service
         """
         JsonCacheManager.__init__(self, base_url)
+        self.papers_by_id: Dict[str, Paper] = {}
+        self.papers_by_path: Dict[str, Paper] = {}
+        self.paper_records_by_path: Dict[str, dict] = {}
+        self.paper_dblp_by_path: Dict[str, dict] = {}
         
-    def getPaper(self,number:int,pdf_name:str):
+    def getPaper(self, number: int, pdf_name: str):
         """
         get the paper with the given number and pdf name
     
         Args:
             number(int): the number of the volume the paper is part of
             pdf_name(str): the pdf name of the paper
-            exceptionOnFail(bool): if True raise an exception on failure
         
         Returns:
             Paper: the paper or None if the paper is not found
         """
-        pdf_path=f"Vol-{number}/{pdf_name}.pdf"
-        paper=None
+        pdf_path = f"Vol-{number}/{pdf_name}.pdf"
+        paper = None
         if pdf_path in self.papers_by_path:
-            paper=self.papers_by_path[pdf_path]
-            paper.pm=self
+            paper = self.papers_by_path[pdf_path]
+            paper.pm = self
         return paper
-    
-    def getPapers(self,vm:VolumeManager, verbose:bool=False):
+
+    def get_volume_papers(self, number: int) -> List[Paper]:
+        """
+        Get all papers of given volume number
+        Args:
+            number(int): the number of the volume the papers are part of
+        Returns:
+            list of papers
+        """
+        volume_papers = [
+            paper
+            for pdf_path, paper in self.papers_by_path.items()
+            if pdf_path.startswith(f"Vol-{number}/")
+        ]
+        return volume_papers
+
+    def getPapers(self, vm: VolumeManager, verbose: bool = False):
         """
         get all papers
         
         Args:
+            vm: VolumeManager
             verbose(bool): if True show verbose loading information
         """
-        profiler=Profiler("Loading papers ...",profile=verbose)
-        paper_lod=self.load_lod("papers")
-        msg=f"{len(paper_lod)} papers"
+        profiler = Profiler("Loading papers ...", profile=verbose)
+        paper_lod = self.load_lod("papers")
+        msg = f"{len(paper_lod)} papers"
         profiler.time(msg)
-        profiler=Profiler("Loading dblp paper metadata ...",profile=verbose)
-        paper_dblp_lod=self.load_lod("papers_dblp")
-        msg=f"{len(paper_dblp_lod)} dblp indexed papers"
+        profiler = Profiler("Loading dblp paper metadata ...", profile=verbose)
+        paper_dblp_lod = self.load_lod("papers_dblp")
+        msg = f"{len(paper_dblp_lod)} dblp indexed papers"
         profiler.time(msg)
-        profiler=Profiler("Linking papers and volumes...",profile=verbose)
-        self.papers_by_id={}
-        self.paper_records_by_path={}
-        self.papers_by_path={}
-        for _index,paper_record in enumerate(paper_lod):
-            pdf_name=paper_record["pdf_name"]
-            volume_number=paper_record["vol_number"]
-            volume=vm.getVolume(volume_number)
-            #pdf_url=f"https://ceur-ws.org/Vol-{volume_number}/{pdf_name}"
-            pdf_path=f"Vol-{volume_number}/{pdf_name}"
-            pdf_url=f"https://ceur-ws.org/{pdf_path}"
+        profiler = Profiler("Linking papers and volumes...", profile=verbose)
+        self.papers_by_id = {}
+        self.paper_records_by_path = {}
+        self.papers_by_path = {}
+        for _index, paper_record in enumerate(paper_lod):
+            pdf_name = paper_record["pdf_name"]
+            volume_number = paper_record["vol_number"]
+            volume = vm.getVolume(volume_number)
+            # pdf_url=f"https://ceur-ws.org/Vol-{volume_number}/{pdf_name}"
+            pdf_path = f"Vol-{volume_number}/{pdf_name}"
+            pdf_url = f"https://ceur-ws.org/{pdf_path}"
             try:
-                paper=Paper(
+                paper = Paper(
                     id=paper_record["id"],
                     title=paper_record["title"],
-                    #authors=paper_record["authors"],
+                    # authors=paper_record["authors"],
                     pdfUrl=pdf_url,
                     volume=volume
                 )
+                paper.pm = self
                 if volume:
                     volume.addPaper(paper)
-                self.papers_by_id[paper_record["id"]]=paper
-                self.papers_by_path[pdf_path]=paper
-                self.paper_records_by_path[pdf_path]=paper_record
+                self.papers_by_id[paper_record["id"]] = paper
+                self.papers_by_path[pdf_path] = paper
+                self.paper_records_by_path[pdf_path] = paper_record
             except Exception as ex:
-                print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}",flush=True)
-        self.paper_dblp_by_path={}
-        for _index,dblp_record in enumerate(paper_dblp_lod):
-            pdf_id=dblp_record["pdf_id"]
-            self.paper_dblp_by_path[f"{pdf_id}.pdf"]=dblp_record
-        msg=f"{len(self.papers_by_path)} papers linked to volumes"
+                print(f"handling of Paper for pdfUrl '{pdf_url}' failed with {str(ex)}", flush=True)
+        self.paper_dblp_by_path = {}
+        for _index, dblp_record in enumerate(paper_dblp_lod):
+            pdf_id = dblp_record["pdf_id"]
+            self.paper_dblp_by_path[f"{pdf_id}.pdf"] = dblp_record
+        msg = f"{len(self.papers_by_path)} papers linked to volumes"
         profiler.time(msg)    
         

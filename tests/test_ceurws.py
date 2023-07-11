@@ -5,7 +5,7 @@ Created on 2023-03-18
 '''
 import html
 
-from ceurspt.ceurws import Volume
+from ceurspt.ceurws import Paper, Volume
 from tests.base_spt_test import BaseSptTest
 import json
 
@@ -205,3 +205,22 @@ class Test_CEURWS(BaseSptTest):
         problematic_acronym = "IT&I-2022"
         self.assertNotIn(problematic_acronym, content)
         self.assertIn(html.escape(problematic_acronym), content)
+
+    def test_get_volume_papers(self):
+        """
+        tests PaperManager.get_volume_papers
+        """
+        test_params = [
+            (3262, 17),
+            (1500, 8),
+            (900000, 0),  # non-existent volume should not have papers
+        ]
+        for test_param in test_params:
+            with self.subTest(test_param=test_param):
+                volume_number, expected_papers = test_param
+                vol_papers = self.pm.get_volume_papers(volume_number)
+                self.assertIsInstance(vol_papers, list)
+                self.assertEqual(expected_papers, len(vol_papers))
+                if expected_papers > 0:
+                    for paper in vol_papers:
+                        self.assertIsInstance(paper, Paper)
