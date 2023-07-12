@@ -40,7 +40,7 @@ class TestBibTexConverter(BaseSptTest):
  year = {2022}
 }"""
         for exp_line in expected_biblatex_paper.split("\n"):
-            self.assertIn(exp_line, pe[:len(expected_biblatex_paper)])
+            self.assertIn(exp_line, pe)
 
     def test_from_paper(self):
         """
