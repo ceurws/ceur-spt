@@ -28,7 +28,8 @@ dependencies = [
   # optional?
   "tqdm",
   # https://github.com/ijl/orjson
-  'orjson>=3.8.9'
+  'orjson>=3.8.9',
+    "bibtexparser"
 ]
 
 requires-python = ">=3.8"
