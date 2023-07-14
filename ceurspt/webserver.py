@@ -189,7 +189,7 @@ class WebServer:
                 return {"error": f"unknown volume number {number}"}
 
         @self.app.get("/volume/{number:int}/paper", tags=["json"])
-        async def volume_citation(number: int):
+        async def volume_citation_paper_by_number(number: int):
             """
             Get volume papers
             """
@@ -203,7 +203,7 @@ class WebServer:
                 return {"error": f"unknown volume number {number}"}
 
         @self.app.get("/volume/{number:int}/citation", tags=["citation"])
-        async def volume_citation(number: int):
+        async def volume_citation_citation(number: int):
             """
             Get volume citation
             """
@@ -215,7 +215,7 @@ class WebServer:
                 return {"error": f"unknown volume number {number}"}
 
         @self.app.get("/volume/{number:int}/paper/{pdf_name:str}", tags=["json"])
-        async def volume_citation(number: int, pdf_name: str):
+        async def volume_citation_paper_by_name(number: int, pdf_name: str):
             """
             Get paper citation
             """
@@ -227,7 +227,7 @@ class WebServer:
                 return {"error": f"unknown volume number {number} or paper {pdf_name}"}
 
         @self.app.get("/volume/{number:int}/paper/{pdf_name:str}/citation", tags=["citation"])
-        async def volume_citation(number: int, pdf_name: str):
+        async def volume_paper_citation(number: int, pdf_name: str):
             """
             Get paper citation
             """
