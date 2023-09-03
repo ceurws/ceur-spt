@@ -29,7 +29,7 @@ dependencies = [
   "tqdm",
   # https://github.com/ijl/orjson
   "orjson>=3.8.9",
-    "bibtexparser"
+  "bibtexparser",
   # https://pypi.org/project/oauthlib/
   "oauthlib"
 ]
