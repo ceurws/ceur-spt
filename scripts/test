@@ -18,7 +18,7 @@ python="python3"
 venv_path=".venv"
 
 # prepare options
-package=ceur-spt
+package=ceurspt
 background=""
 log=""
 test_name=""
@@ -95,8 +95,8 @@ setup_and_activate_venv() {
     touch "$ref_file"
   fi
 
-  # Check if there are new changes in tests or corpus directories
-  if find tests corpus -type f -newer "$ref_file" | grep -q .; then
+  # Check if there are new changes in tests or package directories
+  if find tests $package -type f -newer "$ref_file" | grep -q .; then
     color_msg $blue "New changes detected in tests or corpus directories. Running scripts/install."
     pip install --upgrade pip
     scripts/install
