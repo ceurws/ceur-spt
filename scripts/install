@@ -1,4 +1,41 @@
 #!/bin/bash
+
 # WF 2023-02-14
-# install
+# Checking for pdftotext installation and installing if necessary
+
+# Function to install pdftotext on Ubuntu
+install_on_ubuntu() {
+  echo "Installing pdftotext on Ubuntu..."
+  sudo apt update
+  sudo apt install -y poppler-utils
+}
+
+# Function to install pdftotext on MacOS
+install_on_macos() {
+  echo "Installing pdftotext on MacOS..."
+  # Ensuring MacPorts is available
+  port version > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    sudo port install poppler
+  else
+    echo "MacPorts not found. Please install MacPorts and run this script again."
+    exit 1
+  fi
+}
+
+# Checking if pdftotext is available
+if ! which pdftotext > /dev/null; then
+  # pdftotext not found, determining OS and installing
+  OS="$(uname)"
+  case $OS in
+    Linux*)     install_on_ubuntu;;
+    Darwin*)    install_on_macos;;
+    *)          echo "Unsupported operating system: $OS"; exit 1;;
+  esac
+else
+  echo "pdftotext is already installed."
+fi
+
+# Install other dependencies
+echo "Installing other necessary dependencies..."
 pip install .
