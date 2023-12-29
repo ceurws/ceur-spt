@@ -27,6 +27,8 @@ dependencies = [
   # https://github.com/tqdm/tqdm
   # optional?
   "tqdm",
+  # https://pypi.org/project/PyYAML/
+  "PyYAML",
   # https://github.com/ijl/orjson
   "orjson>=3.8.9",
   "bibtexparser",

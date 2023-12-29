@@ -5,7 +5,7 @@ Created on 2023-03-18
 '''
 import ceurspt.ceurws_base
 import ceurspt.models.dblp
-
+import json
 from bs4 import BeautifulSoup
 from ceurspt.profiler import Profiler
 from ceurspt.version import Version
@@ -165,7 +165,40 @@ class Paper(ceurspt.ceurws_base.Paper):
                     "P1545": f"{index+1}"
                   }})
         return wb
-         
+     
+    def as_wbi_cli_text(self, qid: str) -> str:
+        """
+        Generates a series of Wikibase CLI command strings to add claims to the entity
+        represented by this paper, based on the provided QID.
+
+        Args:
+            qid (str): The QID of the Wikibase item to which the claims will be added.
+
+        Returns:
+            str: A string containing all the 'wb add-claim' commands separated by newlines.
+        """
+        # Get the dictionary representation of the paper
+        wb_dict = self.as_wb_dict()
+        
+        # Initialize an empty list to hold all commands
+        cli_commands = []
+        
+        # Iterate through each claim to create a separate wb add-claim command
+        for prop, value in wb_dict['claims'].items():
+            # Handle different structures in claims (e.g., simple vs. complex with qualifiers)
+            if isinstance(value, list):  # Expecting a list of values (or complex value structures)
+                for val in value:
+                    # Convert value to a JSON string and escape quotes for command line
+                    val_json = json.dumps(val).replace('"', '\\"')
+                    cli_commands.append(f'wb add-claim {qid} {prop} "{val_json}"')
+            else:  # A single value or simple structure
+                # Convert value to a JSON string and escape quotes for command line
+                value_json = json.dumps(value).replace('"', '\\"')
+                cli_commands.append(f'wb add-claim {qid} {prop} "{value_json}"')
+
+        # Combine all commands into a single string separated by newlines
+        cli = "\n".join(cli_commands)
+        return cli
     
     def as_quickstatements(self)->str:
         """
@@ -439,9 +472,21 @@ LAST|P50|{author.wikidata_id}|P1545|"{index+1}"
                 "valid":True
             },   
             {
+                "src": "/static/icons/32px-Wikibase_logo.svg.png",
+                "title": "wikibase CLI", 
+                "link":f"/{pdf_name}.wbcli", 
+                "valid":True
+            },   
+            {
                 "src": "/static/icons/32px-JSON_vector_logo.svg.png", 
                 "title": "JSON metadata", 
                 "link":f"/{pdf_name}.json", 
+                "valid":True
+            },
+            {
+                "src": "/static/icons/32px-YAML_Logo.svg.png", 
+                "title": "YAML metadata", 
+                "link":f"/{pdf_name}.yaml", 
                 "valid":True
             }
         ]
@@ -734,6 +779,12 @@ class Volume(ceurspt.ceurws_base.Volume):
                 "link":f"/Vol-{self.number}.json", 
                 "valid":True
             },
+            {
+                "src": "/static/icons/32px-YAML_Logo.svg.png", 
+                "title": "YML metadata", 
+                "link":f"/Vol-{self.number}.yaml", 
+                "valid":True
+            }
             
         ]
         icon_tag=Volume.create_icon_bar(soup, icon_list=icon_list)

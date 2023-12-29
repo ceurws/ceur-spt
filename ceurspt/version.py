@@ -13,7 +13,7 @@ class Version(object):
     name = ""
     version = ceurspt.__version__
     date = '2023-03-17'
-    updated = '2023-07-12'
+    updated = '2023-12-29'
     description = 'CEUR-WS Single Point of Truth RestFUL server',
 
     authors = 'Tim Holzheim, Wolfgang Fahl'

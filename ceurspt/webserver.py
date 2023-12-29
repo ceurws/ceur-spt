@@ -4,6 +4,7 @@ Created on 2023-03-17
 @author: wf
 """
 from typing import Optional
+import yaml
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Response, RedirectResponse
@@ -68,6 +69,15 @@ class WebServer:
             paper = self.getPaper(number, pdf_name)
             paper_dict = paper.as_wb_dict()
             return paper_dict
+        
+        @self.app.get("/Vol-{number:int}/{pdf_name}/{qid}.wbcli")
+        async def paperWikibaseCli(number: int, pdf_name,qid: str):
+            """
+            get the json response to the wikibase-cli for the given paper
+            """
+            paper = self.getPaper(number, pdf_name)
+            paper_cli_text = paper.as_wbi_cli_text(qid)
+            return PlainTextResponse(paper_cli_text)
         
         @self.app.get("/Vol-{number:int}/{pdf_name}.html")
         async def paperHtml(number: int, pdf_name: str):
@@ -237,6 +247,44 @@ class WebServer:
                 return PlainTextResponse(content=citation)
             else:
                 return {"error": f"unknown volume number {number} or paper {pdf_name}"}
+            
+        @self.app.get("/Vol-{number:int}/{pdf_name}.yaml")
+        async def paperYaml(number: int, pdf_name: str):
+            paper = self.getPaper(number, pdf_name)
+            paper_dict = paper.getMergedDict()
+            yaml_content = yaml.dump(paper_dict)
+            return Response(content=yaml_content, media_type="application/x-yaml")
+        
+        @self.app.get("/Vol-{number:int}.yaml")
+        async def volumeYaml(number: int):
+            vol = self.getVolume(number)
+            if vol:
+                volume_dict = vol.getMergedDict()
+            else:
+                volume_dict = {"error": f"unknown volume number {number}"}
+            yaml_content = yaml.dump(volume_dict)
+            return Response(content=yaml_content, media_type="application/x-yaml")
+        
+        @self.app.get("/volume/{number:int}/paper.yaml", tags=["yaml"])
+        async def volume_papers_yaml(number: int):
+            vol = self.getVolume(number)
+            if vol:
+                paper_records = [paper.getMergedDict() for paper in vol.papers]
+            else:
+                paper_records = {"error": f"unknown volume number {number}"}
+            yaml_content = yaml.dump(paper_records)
+            return Response(content=yaml_content, media_type="application/x-yaml")
+        
+        @self.app.get("/volume/{number:int}/paper/{pdf_name:str}.yaml", tags=["yaml"])
+        async def volume_paper_yaml(number: int, pdf_name: str):
+            paper = self.getPaper(number, pdf_name)
+            if paper:
+                paper_dict = paper.getMergedDict()
+            else:
+                paper_dict = {"error": f"unknown volume number {number} or paper {pdf_name}"}
+            yaml_content = yaml.dump(paper_dict)
+            return Response(content=yaml_content, media_type="application/x-yaml")
+
         
     def volumeHtml(self, number: int, ext: str = ".pdf") -> HTMLResponse:
         """
