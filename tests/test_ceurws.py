@@ -181,7 +181,7 @@ class Test_CEURWS(BaseSptTest):
         paper=self.pm.getPaper(3262, "paper1")
         markup=paper.as_smw_markup()
         debug=self.debug
-        debug=True
+        #debug=True
         if debug:
             print(markup)
         self.assertTrue("|dblpUrl=https://dblp.org/rec/conf/semweb/FerrantiPSA22" in markup)
