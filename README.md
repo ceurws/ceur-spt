@@ -3,7 +3,7 @@ RESTFul Single Point of Truth Server for CEUR-WS
 
 [![Join the discussion at https://github.com/ceurws/ceur-spt/discussions](https://img.shields.io/github/discussions/ceurws/ceur-spt)](https://github.com/ceurws/ceur-spt/discussions)
 [![pypi](https://img.shields.io/pypi/pyversions/pyCEURspt)](https://pypi.org/project/pyCEURspt/)
-[![Github Actions Build](https://github.com/ceurws/ceur-spt/workflows/Build/badge.svg?branch=main)](https://github.com/ceurws/ceur-spt/actions?query=workflow%3ABuild+branch%3Amain)
+[![Github Actions Build](https://github.com/ceurws/ceur-spt/actions/workflows/build.yml/badge.svg)](https://github.com/ceurws/ceur-spt/actions/workflows/build.yml)
 [![PyPI Status](https://img.shields.io/pypi/v/pyCEURspt.svg)](https://pypi.python.org/pypi/pyCEURspt/)
 [![GitHub issues](https://img.shields.io/github/issues/ceurws/ceur-spt.svg)](https://github.com/ceurws/ceur-spt/issues)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/ceurws/ceur-spt.svg)](https://github.com/ceurws/ceur-spt/issues/?q=is%3Aissue+is%3Aclosed)
