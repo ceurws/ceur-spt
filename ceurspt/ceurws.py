@@ -1159,27 +1159,30 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
             self.volumes_by_number[vol_number] = volume
         for proc_record in proceedings_lod:
             number = proc_record["sVolume"]
-            volume_record = self.volume_records_by_number[number]
-            volume = self.volumes_by_number[number]
-            for key, value in proc_record.items():
-                volume_record[f"wd.{key}"] = value
-            map_pairs = [
-                ("item", "wikidataid"),
-                ("itemDescription", "description"),
-                ("dblpProceedingsId", "dblp"),
-                ("described_at_URL", "url"),
-                ("ppnId", "k10plus"),
-                ("URN_NBN", "urn")
-            ]
-            for wd_id, attr in map_pairs:
-                wd_key = f"wd.{wd_id}"
-                if wd_key in volume_record:
-                    value = volume_record[wd_key]
-                    if isinstance(value, str):
-                        value = value.replace("http://www.wikidata.org/entity/", "")
-                        value = value.replace("https://www.wikidata.org/wiki/", "")
-                    setattr(volume, attr, value)
-                    pass
+            if not number:
+                print(f"Warning: {proc_record} has no volume number")
+            else:
+                volume_record = self.volume_records_by_number[number]
+                volume = self.volumes_by_number[number]
+                for key, value in proc_record.items():
+                    volume_record[f"wd.{key}"] = value
+                map_pairs = [
+                    ("item", "wikidataid"),
+                    ("itemDescription", "description"),
+                    ("dblpProceedingsId", "dblp"),
+                    ("described_at_URL", "url"),
+                    ("ppnId", "k10plus"),
+                    ("URN_NBN", "urn")
+                ]
+                for wd_id, attr in map_pairs:
+                    wd_key = f"wd.{wd_id}"
+                    if wd_key in volume_record:
+                        value = volume_record[wd_key]
+                        if isinstance(value, str):
+                            value = value.replace("http://www.wikidata.org/entity/", "")
+                            value = value.replace("https://www.wikidata.org/wiki/", "")
+                        setattr(volume, attr, value)
+                        pass
         msg = f"{len(self.volumes_by_number)} volumes"
         profiler.time(msg)
 
