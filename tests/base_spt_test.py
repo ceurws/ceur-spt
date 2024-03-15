@@ -20,7 +20,7 @@ class BaseSptTest(Basetest):
         Basetest.setUp(self, debug=debug, profile=profile)
         self.script_path = Path(__file__)
         self.base_path = f"{self.script_path.parent.parent}/ceur-ws"
-        self.base_url = "http://cvb.bitplan.com"
+        self.base_url = "http://cvb2.bitplan.com"
         self.vm = VolumeManager(base_path=self.base_path, base_url=self.base_url)
         self.vm.getVolumes()
         self.pm = PaperManager(base_url=self.base_url)

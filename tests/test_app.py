@@ -59,9 +59,11 @@ class Test_app(BaseSptTest):
         """
         response=self.checkResponse("/index.html", 200)
         html=response.text
-        debug=True
+        debug=self.debug
+        #debug=True
         if debug:
             print(html)
+        self.assertTrue("<a name='Vol-58'>Vol-58</a>" in html)
     
     def test_read_volume(self):
         """
