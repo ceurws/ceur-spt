@@ -3,16 +3,18 @@ Created on 2023-03-23
 
 @author: wf
 """
-from tests.basetest import Basetest
-from ceurspt.ceurws import VolumeManager, PaperManager
+
 from pathlib import Path
+
+from ceurspt.ceurws import PaperManager, VolumeManager
+from tests.basetest import Basetest
 
 
 class BaseSptTest(Basetest):
     """
     Basetest for Single Point of Truth
     """
-    
+
     def setUp(self, debug=False, profile=True):
         """
         prepare the test environment

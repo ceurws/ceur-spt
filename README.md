@@ -7,10 +7,11 @@ RESTFul Single Point of Truth Server for CEUR-WS
 [![PyPI Status](https://img.shields.io/pypi/v/pyCEURspt.svg)](https://pypi.python.org/pypi/pyCEURspt/)
 [![GitHub issues](https://img.shields.io/github/issues/ceurws/ceur-spt.svg)](https://github.com/ceurws/ceur-spt/issues)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/ceurws/ceur-spt.svg)](https://github.com/ceurws/ceur-spt/issues/?q=is%3Aissue+is%3Aclosed)
+[![API Docs](https://img.shields.io/badge/API-Documentation-blue)](https://ceurws.github.io/ceur-spt/) 
 [![License](https://img.shields.io/github/license/ceurws/ceur-spt.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Introduction
-### CEUR-WS 
+### CEUR-WS
 CEUR Workshop Proceedings (CEUR-WS.org)
 Free Open-Access Proceedings for Computer Science Workshops
 https://ceur-ws.org/
@@ -21,5 +22,3 @@ https://ceur-ws.org/
 ### Single Point of Truth
 - http://ceurspt.wikidata.dbis.rwth-aachen.de/index.html
 - http://ceurspt.wikidata.dbis.rwth-aachen.de/docs
-
-

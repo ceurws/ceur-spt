@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from functools import partial
 from operator import is_not
@@ -16,6 +16,7 @@ class ProceedingsEntry:
     see https://ftp.mpi-inf.mpg.de/pub/tex/mirror/ftp.dante.de/pub/tex/macros/latex/contrib/biblatex/doc/biblatex.pdf
 
     """
+
     title: str
     year: str
     date: str
@@ -64,26 +65,38 @@ class ProceedingsEntry:
         Convert given volume to ProceedingsEntry
         """
         record = volume.getMergedDict()
-        pub_date = datetime.fromisoformat(record.get("wd.publication_date")) if record.get("wd.publication_date") is not None else None
+        pub_date = (
+            datetime.fromisoformat(record.get("wd.publication_date"))
+            if record.get("wd.publication_date") is not None
+            else None
+        )
         proceeding = ProceedingsEntry(
-                title=volume.title,
-                date=pub_date.date().isoformat(),
-                year=str(pub_date.year) if pub_date else None,
-                url=record.get("spt.url"),
-                eventtitle=record.get("wd.eventLabel", None),
-                eventdate=record.get("wd.startDate", None),
-                venue=",".join(filter(partial(is_not, None),[record.get("wd.locationLabel", None), record.get("wd.countryLabel", None)])),
-                volume=str(volume.number),
-                editor=record.get("cvb.editors", "").replace(",", " and")
+            title=volume.title,
+            date=pub_date.date().isoformat(),
+            year=str(pub_date.year) if pub_date else None,
+            url=record.get("spt.url"),
+            eventtitle=record.get("wd.eventLabel", None),
+            eventdate=record.get("wd.startDate", None),
+            venue=",".join(
+                filter(
+                    partial(is_not, None),
+                    [
+                        record.get("wd.locationLabel", None),
+                        record.get("wd.countryLabel", None),
+                    ],
+                )
+            ),
+            volume=str(volume.number),
+            editor=record.get("cvb.editors", "").replace(",", " and"),
         )
         proceeding.__volume = volume
         return proceeding
 
     def to_bibtex_record(self) -> dict:
         record = {
-            'ENTRYTYPE': 'proceedings',
-            'ID': self.get_id(),
-            **{k: v for k, v in asdict(self).items() if v not in [None, ""]}
+            "ENTRYTYPE": "proceedings",
+            "ID": self.get_id(),
+            **{k: v for k, v in asdict(self).items() if v not in [None, ""]},
         }
         return record
 
@@ -101,6 +114,7 @@ class InProceedingsEntry:
     """
     see https://ftp.mpi-inf.mpg.de/pub/tex/mirror/ftp.dante.de/pub/tex/macros/latex/contrib/biblatex/doc/biblatex.pdf
     """
+
     title: str
     author: Union[str, List[str]]
     booktitle: str
@@ -151,28 +165,51 @@ class InProceedingsEntry:
     @classmethod
     def from_paper(cls, paper: Paper) -> "InProceedingsEntry":
         record = paper.getMergedDict()
-        pub_date = datetime.fromisoformat(record.get("spt.volume").get("date")) if record.get("spt.volume") is not None else None
+        pub_date = (
+            datetime.fromisoformat(record.get("spt.volume").get("date"))
+            if record.get("spt.volume") is not None
+            else None
+        )
         authors = record.get("cvb.authors", None)
         if authors is not None:
             if isinstance(authors, str):
                 authors = authors.replace(",", " and ")
         elif "dblp.authors" in record:
-            authors = " and ".join([author_record.get("label") for author_record in record.get("dblp.authors")])
+            authors = " and ".join(
+                [
+                    author_record.get("label")
+                    for author_record in record.get("dblp.authors")
+                ]
+            )
         in_proceedings = InProceedingsEntry(
-                title=record.get("spt.title", None),
-                author=authors,
-                year=str(pub_date.year),
-                date=pub_date.date().isoformat(),
-                booktitle=record.get("spt.volume", {}).get("title", None),
-                url=str(record.get("spt.pdfUrl")) if record.get("spt.pdfUrl", None) else None,
-                volume=str(record.get("spt.volume", {}).get("number"))
+            title=record.get("spt.title", None),
+            author=authors,
+            year=str(pub_date.year),
+            date=pub_date.date().isoformat(),
+            booktitle=record.get("spt.volume", {}).get("title", None),
+            url=(
+                str(record.get("spt.pdfUrl"))
+                if record.get("spt.pdfUrl", None)
+                else None
+            ),
+            volume=str(record.get("spt.volume", {}).get("number")),
         )
         if hasattr(paper, "vm") and isinstance(paper.vm, Volume):
             volume_record = paper.vm.getMergedDict()
             in_proceedings.eventtitle = volume_record.get("wd.eventLabel", None)
             in_proceedings.eventdate = volume_record.get("wd.startDate", None)
-            in_proceedings.venue = ",".join(filter(partial(is_not, None), [volume_record.get("wd.locationLabel", None), volume_record.get("wd.countryLabel", None)]))
-            in_proceedings.editor = volume_record.get("cvb.editors", "").replace(",", " and")
+            in_proceedings.venue = ",".join(
+                filter(
+                    partial(is_not, None),
+                    [
+                        volume_record.get("wd.locationLabel", None),
+                        volume_record.get("wd.countryLabel", None),
+                    ],
+                )
+            )
+            in_proceedings.editor = volume_record.get("cvb.editors", "").replace(
+                ",", " and"
+            )
         in_proceedings.__paper = paper
         return in_proceedings
 
@@ -182,22 +219,34 @@ class InProceedingsEntry:
         Args:
             crossref: bibtex key of the proceedings. If set the proceeding specific fields are excluded.
         """
-        proceedings_keys = ["series", "location", "eventtitle", "venue", "volume", "editor", "eventdate"]
+        proceedings_keys = [
+            "series",
+            "location",
+            "eventtitle",
+            "venue",
+            "volume",
+            "editor",
+            "eventdate",
+        ]
         record_fields = {k: v for k, v in asdict(self).items() if v not in [None, ""]}
         if crossref is not None:
-            record_fields = {k:v for k, v in record_fields.items() if k not in proceedings_keys}
+            record_fields = {
+                k: v for k, v in record_fields.items() if k not in proceedings_keys
+            }
             record_fields["crossref"] = crossref
         record = {
-            'ENTRYTYPE': 'inproceedings',
-            'ID': f"ceur-ws:{self.get_id()}",
-            **record_fields
+            "ENTRYTYPE": "inproceedings",
+            "ID": f"ceur-ws:{self.get_id()}",
+            **record_fields,
         }
         return record
 
     def get_id(self) -> str:
         entry_id = None
         try:
-            entry_id = self.__paper.getMergedDict().get("spt.id", None).replace("/", ":")
+            entry_id = (
+                self.__paper.getMergedDict().get("spt.id", None).replace("/", ":")
+            )
         except KeyError:
             pass
         return entry_id
@@ -218,7 +267,11 @@ class BibTexConverter:
         library.entries.append(proceedings_entry.to_bibtex_record())
         for paper in volume.papers:
             in_proceedings_entry = InProceedingsEntry.from_paper(paper)
-            library.entries.append(in_proceedings_entry.to_bibtex_record(crossref=proceedings_entry.get_id()))
+            library.entries.append(
+                in_proceedings_entry.to_bibtex_record(
+                    crossref=proceedings_entry.get_id()
+                )
+            )
         bibtex = bibtexparser.dumps(library)
         return bibtex
 

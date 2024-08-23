@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 # CEUR-WS sample data
 ceur-ws
+
+# mkdocs
+docs

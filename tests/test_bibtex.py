@@ -28,7 +28,7 @@ class TestBibTexConverter(BaseSptTest):
  year = {2022}
 }"""
         for exp_line in expected_biblatex_volume.split("\n"):
-            self.assertIn(exp_line, pe[:len(expected_biblatex_volume)])
+            self.assertIn(exp_line, pe[: len(expected_biblatex_volume)])
         expected_biblatex_paper = """@inproceedings{ceur-ws:Vol-3262:paper7,
  author = {Wolfgang Fahl and Tim Holzheim and Andrea Westerinen and Christoph Lange and Stefan Decker},
  booktitle = {Proceedings of the 3rd Wikidata Workshop 2022},
@@ -61,8 +61,8 @@ class TestBibTexConverter(BaseSptTest):
  year = {2022}
 }"""
         for exp_line in biblatex.split("\n"):
-            self.assertIn(exp_line, pe[:len(biblatex)])
+            self.assertIn(exp_line, pe[: len(biblatex)])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

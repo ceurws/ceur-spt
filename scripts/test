@@ -1,24 +1,26 @@
 #!/bin/bash
 # WF 2020-06-03: initial version
-# WF 2023-11-18
-# Enhanced with improved help/usage, error handling, and additional features
+# WF 2022-08-20
+# WF 2023-11-18 Enhanced with improved help/usage, error handling, and additional features
+# WF 2024-08-03 Added tox support and made standard test script base on 2022 version
+# wf 2024-08-23 merge with 2023 feature rich version
 
-# ansi colors
+# ANSI colors
 blue='\033[0;34m'
 red='\033[0;31m'
 green='\033[0;32m'
 endColor='\033[0m'
 
-# prepare python environment
+# Prepare Python environment
 export PYTHON_PATH="."
 export PYTHONWARNINGS="ignore::DeprecationWarning"
 python="python3"
 
-# prepare virtual environment 
+# Prepare virtual environment
 venv_path=".venv"
 
-# prepare options
-package=ceurspt
+# Prepare options
+package=""
 background=""
 log=""
 test_name=""
@@ -30,6 +32,26 @@ color_msg() {
   echo -e "${l_color}$l_msg${endColor}"
 }
 
+# Function to display error messages
+error() {
+  local l_msg="$1"
+  color_msg $red "Error: $l_msg" 1>&2
+  usage
+  exit 1
+}
+
+# Function to show negative messages
+negative() {
+  local l_msg="$1"
+  color_msg $red "❌:$l_msg"
+}
+
+# Function to show positive messages
+positive() {
+  local l_msg="$1"
+  color_msg $green "✅:$l_msg"
+}
+
 # Function to display usage information
 usage() {
   color_msg $blue "Usage: $0 [OPTIONS]"
@@ -38,29 +60,53 @@ usage() {
   echo "  -d, --debug       Show environment for debugging."
   echo "  -g, --green       Run tests using the green test runner."
   echo "  -h, --help        Display this help message."
+  echo "  -m, --module      Run modulewise test."
   echo "  -p, --python      Specify the Python interpreter to use."
+  echo "  -t, --tox         Run tests with tox."
   echo "  -tn, --test_name  Run only the specified test module."
-  echo "  --venv        Use a virtual environment for testing."
+  echo "  --venv            Use a virtual environment for testing."
   echo ""
   echo "Example:"
   echo "  $0 --python python3.10 --background"
   exit 1
 }
 
-# Function to handle errors
-error() {
-  local l_msg="$1"
-  color_msg $red "Error: $l_msg" 1>&2
-  usage
-  exit 1
+# Function to check and install packages
+check_package() {
+  local l_package="$1"
+  pip show $l_package > /dev/null
+  if [ $? -ne 0 ]
+  then
+    negative "$l_package"
+    color_msg $blue "installing $l_package"
+    pip install $l_package
+  else
+    positive "$l_package"
+  fi
+}
+
+# Function to run modulewise tests
+modulewise_test() {
+  foundErrors=0
+  foundTests=0
+  for testmodule in tests/test*.py
+  do
+    echo "testing $testmodule ..."
+    python -m unittest $testmodule
+    exit_code=$?
+    foundErrors=$((foundErrors+exit_code))
+    foundTests=$((foundTests+1))
+  done
+  echo "$foundErrors/$foundTests module unit tests failed" 1>&2
+  if [[ $foundErrors -gt 0 ]]
+  then
+    exit 1
+  fi
 }
 
 # Test with green
-# Install green if necessary and run tests
 test_with_green() {
-  if ! pip list | grep -q "^green "; then
-    pip install green
-  fi
+  check_package green
   green_options=""
   if [ ! -z "$test_name" ]; then
     green_options="tests.$test_name"
@@ -73,59 +119,59 @@ test_with_unittest() {
   if [ ! -z "$test_name" ]; then
     options="tests.$test_name"
   else
-    options="discover"   
+    options="discover"
   fi
   $python -m unittest $options
 }
 
-# setup virtual venv environment
-# run scripts/install in that environment
-# if any files in tests or corpus have been modified
+# Setup and activate virtual environment
 setup_and_activate_venv() {
   if [ ! -d "$venv_path" ]; then
     $python -m venv $venv_path
   fi
   source $venv_path/bin/activate
 
-  # File used as a reference to last install
   local ref_file="$venv_path/.last_install"
-
-  # Create the reference file if it doesn't exist
   if [ ! -f "$ref_file" ]; then
     touch "$ref_file"
   fi
 
-  # Check if there are new changes in tests or package directories
   if find tests $package -type f -newer "$ref_file" | grep -q .; then
     color_msg $blue "New changes detected in tests or corpus directories. Running scripts/install."
     pip install --upgrade pip
     scripts/install
-    # Update the reference file's modification time
     touch "$ref_file"
   else
     color_msg $green "No new changes in tests or corpus directories."
   fi
 }
 
+# Check if the package line exists in pyproject.toml
+if grep -q 'tool.hatch.build.targets.wheel.sources' pyproject.toml; then
+  package=$(awk -F'"' '/tool.hatch.build.targets.wheel.sources/{getline; print $2}' pyproject.toml)
+else
+  error "The 'tool.hatch.build.targets.wheel.sources' entry is missing in pyproject.toml"
+fi
+
+# Main script logic
 while [ "$1" != "" ]; do
     option="$1"
     case $option in
         -b|--background)
-            background="nohup " 
+            background="nohup "
             logdir="/var/log/$package"
             sudo mkdir -p $logdir
             me=$(whoami)
             sudo chown $me $logdir
             timestamp=$(date "+%Y-%m-%d-%H_%M_%S")
             log=$logdir/${timestamp}.log
-            echo "Test started $timestamp" >$log
+            color_msg $blue "Tests for $package started $timestamp" >$log
             nohup $python -m unittest discover 2>&1 >>$log&
             exit 0
             ;;
         -d|--debug)
-            # Show environment for debugging
             env
-            exit 0
+            set -x
             ;;
         -g|--green)
             test_with_green
@@ -134,12 +180,21 @@ while [ "$1" != "" ]; do
         -h|--help)
             usage
             ;;
+        -m|--module)
+            modulewise_test
+            exit 0
+            ;;
         -p|--python)
             shift
             if [ -z "$1" ]; then
                 error "Missing argument for --python"
             fi
             python="$1"
+            ;;
+        -t|--tox)
+            check_package tox
+            tox -e py
+            exit 0
             ;;
         -tn|--test_name)
             shift
@@ -158,5 +213,5 @@ while [ "$1" != "" ]; do
     shift
 done
 
-# Test using unittest module
+# Default action: run unittest discover
 test_with_unittest
