@@ -1,5 +1,6 @@
 import json
 
+import httpx
 from fastapi.testclient import TestClient
 
 from ceurspt.webserver import WebServer
@@ -17,7 +18,7 @@ class Test_app(BaseSptTest):
         self.ws = WebServer(self.vm, self.pm, static_directory=static_directory)
         self.client = TestClient(self.ws.app)
 
-    def checkResponse(self, path: str, status_code: int) -> "Response":
+    def checkResponse(self, path: str, status_code: int) -> httpx.Response:
         """
         check the response for the given path for the given status code
 
@@ -106,6 +107,6 @@ class Test_app(BaseSptTest):
         """
         test reading the pdf for a paper
         """
-        response = self.checkResponse(f"/Vol-3262/paper1.pdf", 200)
+        response = self.checkResponse("/Vol-3262/paper1.pdf", 200)
         self.assertEqual(2509257, response.num_bytes_downloaded)
         pass

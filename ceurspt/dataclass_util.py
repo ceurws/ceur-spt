@@ -19,5 +19,5 @@ class DataClassUtil:
         try:
             fieldtypes = {f.name: f.type for f in dataclasses.fields(klass)}
             return klass(**{f: cls.dataclass_from_dict(fieldtypes[f], d[f]) for f in d})
-        except:
+        except Exception:
             return d  # Not a dataclass field

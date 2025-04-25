@@ -25,6 +25,7 @@ class DblpPaper:
             if isinstance(author, dict):
                 self.authors[i] = DblpScholar(**author)
 
+
 @dataclass
 class DblpProceeding:
     dblp_publication_id: str

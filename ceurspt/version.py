@@ -24,7 +24,7 @@ class Version(object):
     chat_url = "https://github.com/ceurws/ceur-spt/discussions"
     cm_url = "https://github.com/ceurws/ceur-spt"
 
-    license = f"""Copyright 2023 contributors. All rights reserved.
+    license = """Copyright 2023 contributors. All rights reserved.
 
   Licensed under the Apache License 2.0
   https://www.apache.org/licenses/LICENSE-2.0

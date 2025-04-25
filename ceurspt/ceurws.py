@@ -13,10 +13,10 @@ import urllib.request
 from datetime import datetime
 from html import escape
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 import orjson
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 import ceurspt.ceurws_base
 import ceurspt.models.dblp
@@ -205,7 +205,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         """
         return my quickstatements
         """
-        m_dict = self.getMergedDict()
+        self.getMergedDict()
         paper_date_str = self.volume.date
         paper_date = datetime.strptime(paper_date_str, "%Y-%m-%d")
         qs_date = f"+{paper_date.isoformat(sep='T',timespec='auto')}Z/11"
@@ -684,7 +684,7 @@ class Volume(ceurspt.ceurws_base.Volume):
         soup: BeautifulSoup,
         icon_list: typing.List[typing.Dict[str, str]],
         class_name: str = "icon_list",
-    ) -> "Tag":
+    ) -> Tag:
         """
         Creates a new <div> tag with the specified class name and list of icons.
 
@@ -934,8 +934,8 @@ class Volume(ceurspt.ceurws_base.Volume):
             value = getattr(self, attr)
             if value:
                 markup += f"|{attr}={value}\n"
-        markup += f"""|urn=urn:nbn:de:0074-1155-8
-}}}}"""
+        markup += """|urn=urn:nbn:de:0074-1155-8
+}}"""
         return markup
 
 
@@ -1184,7 +1184,9 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
                 print(f"Warning: {proc_record} has no volume number")
             else:
                 if number not in self.volume_records_by_number:
-                    logger.debug("Volumes and Proceedings cache are out of sync! Volume number: {number} not found in volumes")
+                    logger.debug(
+                        "Volumes and Proceedings cache are out of sync! Volume number: {number} not found in volumes"
+                    )
                     continue
                 volume_record = self.volume_records_by_number[number]
                 volume = self.volumes_by_number[number]
