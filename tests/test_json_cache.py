@@ -38,7 +38,7 @@ class TestJsonCache(Basetest):
         """
         script_path = Path(__file__)
         base_path = f"{script_path.parent.parent}/ceur-ws"
-        base_url = "http://cvb.bitplan.com"
+        base_url = "https://cvb.wikidata.dbis.rwth-aachen.de"
         vm = VolumeManager(base_path=base_path, base_url=base_url)
         vm.getVolumes()
         pm = PaperManager(base_url=base_url)

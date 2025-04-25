@@ -37,7 +37,7 @@ class CeurSptCmd:
         """
         script_path = Path(__file__)
         base_path = f"{script_path.parent.parent}/ceur-ws"
-        base_url = "http://cvb.bitplan.com"
+        base_url = "https://cvb.wikidata.dbis.rwth-aachen.de"
         parser = ArgumentParser(
             description=description, formatter_class=RawDescriptionHelpFormatter
         )

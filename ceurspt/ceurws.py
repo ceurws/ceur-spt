@@ -6,6 +6,7 @@ Created on 2023-03-18
 
 import dataclasses
 import json
+import logging
 import os
 import typing
 import urllib.request
@@ -22,6 +23,9 @@ import ceurspt.models.dblp
 from ceurspt.dataclass_util import DataClassUtil
 from ceurspt.profiler import Profiler
 from ceurspt.version import Version
+
+
+logger = logging.getLogger(__name__)
 
 
 class Scholar(ceurspt.models.dblp.DblpScholar):
@@ -940,7 +944,7 @@ class JsonCacheManager:
     a json based cache manager
     """
 
-    def __init__(self, base_url: str = "http://cvb.bitplan.com"):
+    def __init__(self, base_url: str = "https://cvb.wikidata.dbis.rwth-aachen.de"):
         """
         constructor
 
@@ -1179,6 +1183,9 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
             if not number:
                 print(f"Warning: {proc_record} has no volume number")
             else:
+                if number not in self.volume_records_by_number:
+                    logger.debug("Volumes and Proceedings cache are out of sync! Volume number: {number} not found in volumes")
+                    continue
                 volume_record = self.volume_records_by_number[number]
                 volume = self.volumes_by_number[number]
                 for key, value in proc_record.items():
