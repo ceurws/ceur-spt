@@ -176,7 +176,7 @@ class Test_CEURWS(BaseSptTest):
         debug = True
         if debug:
             print(qs)
-        self.assertTrue('''LAST|P2093|"Nicolas Ferranti"|P1545|"1"''' in qs)
+        self.assertTrue('''LAST|P50|Q112275836|P1545|"1"''' in qs)
 
     def test_paper_as_smw_markup(self):
         """
