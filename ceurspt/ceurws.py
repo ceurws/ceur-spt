@@ -1134,6 +1134,8 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
         Args:
             number(int): the volume to get
         """
+        if isinstance(number, str) and number.isdigit():
+            number = int(number)
         if number in self.volumes_by_number:
             return self.volumes_by_number[number]
         else:
