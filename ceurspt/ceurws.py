@@ -206,6 +206,10 @@ class Paper(ceurspt.ceurws_base.Paper):
         return my quickstatements
         """
         self.getMergedDict()
+        if self.volume is None:
+            raise ValueError(
+                f"Paper {self.id!r} has no associated volume; cannot generate quickstatements."
+            )
         paper_date_str = self.volume.date
         paper_date = datetime.strptime(paper_date_str, "%Y-%m-%d")
         qs_date = f"+{paper_date.isoformat(sep='T',timespec='auto')}Z/11"
