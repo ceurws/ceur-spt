@@ -1,5 +1,9 @@
 #!/bin/bash
 # WF 2023-03-17
+# see https://github.com/ceurws/ceur-spt/issues/31
+
+# CEUR-WS mirror FTP server
+FTP_SERVER="https://ceur-ws.wikidata.dbis.rwth-aachen.de"
 
 #ansi colors
 #http://www.csc.uvic.ca/~sae/seng265/fall04/tips/s265s047-tips/bash-using-colors.html
@@ -76,7 +80,7 @@ getCEURWS() {
   then
     if [ ! -f $zip ]
     then
-      wget http://sunsite.informatik.rwth-aachen.de/ftp/pub/publications/CEUR-WS/$zip
+      wget "$FTP_SERVER/ftp-dir/$zip"
     fi
     unzip $zip
   else

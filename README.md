@@ -15,6 +15,8 @@ RESTFul Single Point of Truth Server for CEUR-WS
 CEUR Workshop Proceedings (CEUR-WS.org)
 Free Open-Access Proceedings for Computer Science Workshops
 https://ceur-ws.org/
+
+**Mirror:** https://ceur-ws.wikidata.dbis.rwth-aachen.de/
 ### Semantification of CEUR-WS
 - http://ceur-ws-browser.bitplan.com
 - http://ceur-ws.bitplan.com
