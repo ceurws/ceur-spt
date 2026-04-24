@@ -83,7 +83,7 @@ class Paper(ceurspt.ceurws_base.Paper):
         text_path = self.getContentPathByPostfix(postfix)
         content = None
         if text_path:
-            with open(text_path, "r") as text_file:
+            with open(text_path, "r", encoding="utf-8") as text_file:
                 content = text_file.read()
         return content
 
@@ -897,7 +897,7 @@ class Volume(ceurspt.ceurws_base.Volume):
         """
         index_path = f"{self.vol_dir}/index.html"
         try:
-            with open(index_path, "r") as index_html:
+            with open(index_path, "r", encoding="utf-8") as index_html:
                 content = index_html.read()
                 if fixLinks:
                     soup = BeautifulSoup(content, "html.parser")
@@ -984,7 +984,7 @@ class JsonCacheManager:
         json_path = self.json_path(lod_name)
         if os.path.isfile(json_path):
             try:
-                with open(json_path) as json_file:
+                with open(json_path, encoding="utf-8") as json_file:
                     json_str = json_file.read()
                     lod = orjson.loads(json_str)
             except Exception as ex:
