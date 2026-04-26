@@ -1131,6 +1131,312 @@ See end of the page for contact details and <a href="https://ceur-ws.org/#IMPRES
 </html>"""
         return html
 
+    def index_alt_html(
+            self, upper: Optional[int] = None, lower: Optional[int] = None
+    ) -> str:
+        """
+        return an index going from the given upper volume number down to the given lower volume number
+
+        Args:
+            upper(int): upper volume number to start with
+            lower(int): lower volume number to end with
+
+        Returns:
+            html code for index
+        """
+        html = """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "https://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head> 
+    <meta http-equiv="Content-Type" content="Type=text/html;charset=utf-8">
+    <meta name="description" content="CEUR-WS.org provides free online scientific papers">
+    <meta name="keywords" content="open access, open archive, free scientific paper, workshop proceedings, online publishing, computer science, information systems" >
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- automatically refresh daily-->
+    <meta http-equiv="expires" content="86400">
+    <link rel="stylesheet" type="text/css" href="/static/ceur-ws.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>CEUR-WS.org - CEUR Workshop Proceedings (free, open-access publishing, computer science/information systems)</title>
+    <link rel="shortcut icon" href="/static/ceur-ws.ico">
+    <!-- Filter bar styles. Kept in-file so the page stays a single document; -->
+   <!-- visually consistent with ceur-ws.css (arial, #404040 text, grey swatches). -->
+   <style type="text/css">
+      #VOLFILTER {
+         width: 97%;
+         margin: 0 0 10px 0;
+         padding: 8px 10px;
+         background-color: #F5F4EF;
+         border: 1px solid #DCDBD7;
+         font-family: arial, sans-serif;
+         font-size: small;
+         color: #404040;
+      }
+      #VOLFILTER fieldset {
+         border: 0;
+         margin: 0;
+         padding: 0;
+         display: inline;
+      }
+      #VOLFILTER label.mode {
+         margin-right: 14px;
+         font-weight: bold;
+         cursor: pointer;
+      }
+      #VOLFILTER .controls {
+         display: inline-block;
+         margin-left: 18px;
+      }
+      #VOLFILTER select,
+      #VOLFILTER input[type="number"] {
+         font-family: arial, sans-serif;
+         font-size: small;
+         padding: 2px 4px;
+         border: 1px solid #B8B7B3;
+         background-color: #FFFFFF;
+         color: #404040;
+      }
+      #VOLFILTER input[type="number"] { width: 6em; }
+      #VOLFILTER .sep { margin: 0 6px; color: #777777; }
+      #VOLFILTER .count {
+         float: right;
+         color: #777777;
+         font-size: smaller;
+         padding-top: 2px;
+      }
+      #VOLFILTER button.reset {
+         margin-left: 14px;
+         font-family: arial, sans-serif;
+         font-size: x-small;
+         padding: 2px 8px;
+         border: 1px solid #B8B7B3;
+         background-color: #FFFFFF;
+         color: #404040;
+         cursor: pointer;
+      }
+      #VOLFILTER button.reset:hover { color: #000080; }
+      #VOLFILTER .hidden-controls { display: none !important; }
+      .VOLGROUP.filtered-out { display: none; }
+      #NO-RESULTS {
+         display: none;
+         width: 97%;
+         padding: 12px;
+         background-color: #FFFFFF;
+         border: 1px solid #DCDBD7;
+         font-family: arial, sans-serif;
+         font-size: small;
+         color: #777777;
+         text-align: center;
+      }
+   </style>
+  </head>
+  """
+        html += f"""
+  <body>
+     {self.head_table_html()}
+     <div>
+       <!-- ====================================================================== -->
+   <!-- FILTER BAR                                                             -->
+   <!-- ====================================================================== -->
+   <!-- Filter options are derived automatically from the data-year and        -->
+   <!-- data-vol attributes on each .VOLGROUP tbody below. Editors do NOT      -->
+   <!-- need to touch this bar when adding a new volume.                       -->
+   <!-- ====================================================================== -->
+   <div id="VOLFILTER">
+      <span class="count" id="VOLCOUNT">&nbsp;</span>
+      <fieldset>
+         <label class="mode"><input type="radio" name="filtermode" value="all" checked> All</label>
+         <label class="mode"><input type="radio" name="filtermode" value="year"> By year</label>
+         <label class="mode"><input type="radio" name="filtermode" value="range"> By volume range</label>
+      </fieldset>
+
+      <span class="controls" id="YEAR-CONTROLS">
+         Year:
+         <select id="YEAR-SELECT"></select>
+      </span>
+
+      <span class="controls" id="RANGE-CONTROLS">
+         Vol-<input type="number" id="RANGE-FROM" min="1" step="1" placeholder="from">
+         <span class="sep">to</span>
+         Vol-<input type="number" id="RANGE-TO" min="1" step="1" placeholder="to">
+      </span>
+
+      <button type="button" class="reset" id="VOLRESET">Reset</button>
+   </div>
+
+   <div id="NO-RESULTS">No volumes match the current filter.</div>
+
+   <!-- ====================================================================== -->
+   <!-- VOLUMES TABLE                                                          -->
+   <!-- ====================================================================== -->
+   <!-- MAINTAINER NOTE: to add a volume, copy one <tbody class="VOLGROUP"> -->
+   <!-- block below. On the header <tr>, set:                                  -->
+   <!--   data-vol="NNNN"   (the volume number, integer)                       -->
+   <!--   data-year="YYYY"  (the publication year)                             -->
+   <!-- Everything else (filter dropdown, count, range bounds) updates         -->
+   <!-- automatically on page load. No JS edits required.                      -->
+   <!-- ====================================================================== -->
+   <TABLE id="MAINTABLE" cellspacing=0 cellpadding=3 border=0 width="97%">
+"""
+        # prepare the indexing
+        # get the volumes as a list from 1 - top e.g. 3365
+        volumes: list[Volume] = list(self.volumes_by_number.values())
+        # reverse the list
+        volumes.reverse()
+        # make sure upper and lower values are valid
+        if upper is None:
+            upper = volumes[0].number
+        if lower is None:
+            lower = 1
+        # loop over the reversed list
+        for vol_index in range(len(volumes)):
+            vol = volumes[vol_index]
+            vol_number = vol.number
+            if vol_number > upper:
+                continue
+            if vol_number < lower:
+                break
+            if isinstance(vol.title, str):
+                vol_title = escape(vol.title)
+            else:
+                vol_title = "Title missing (Might be one of the empty volumes)"
+            if vol_title is None:
+                pass
+            vol_record = vol.getMergedDict()
+            h1 = vol_record.get("cvb.h1")
+            year = vol_record.get("cvb.year")
+            editors = vol_record.get("cvb.editors")
+            submitter = vol_record.get("cvb.submittedBy")
+            published = vol_record.get("cvb.published")
+            urn = vol_record.get("cvb.urn")
+            html += f"""
+<tbody class="VOLGROUP" data-vol="{vol_number}" data-year="{year}">
+ <tr><th colspan="2">&nbsp;</th></tr>
+ <tr>
+    <td align="left" bgcolor="#DCDBD7"><b><a name="Vol-{vol_number}">Vol-{vol_number}</a></b></td>
+    <td align="left" bgcolor="#DCDBD7"><b><font color="#000000"><a href="/Vol-{vol_number}/">{h1}</a></font></b></td>
+ </tr>
+ <tr>
+    <td bgcolor="#FFFFFF">{vol_title}<br>
+       Edited by: {editors}<br>
+       Submitted by: {submitter}<br>
+       Published on CEUR-WS: {published}<br>
+       ONLINE: <a href="/Vol-{vol_number}/">https://ceur-ws.org/Vol-{vol_number}/</a><br>
+       URN: <a href="https://nbn-resolving.org/{urn}">{urn}</a><br>
+       ARCHIVE: <a href="https://ceur-ws.org/ftp-dir/Vol-{vol_number}.zip">https://ceur-ws.org/ftp-dir/Vol-{vol_number}.zip</a>
+    </td>
+ </tr>
+</tbody>
+"""
+        html += """ 
+   </TABLE>
+      </div>
+  
+   <!-- ====================================================================== -->
+   <!-- Filter script — plain JS, no dependencies, <2KB.                       -->
+   <!-- Reads data-vol and data-year from every tbody.VOLGROUP and             -->
+   <!-- hides/shows them based on the selected filter mode.                    -->
+   <!-- ====================================================================== -->
+   <script type="text/javascript">
+   (function () {
+      var groups   = Array.prototype.slice.call(document.querySelectorAll('tbody.VOLGROUP'));
+      var yearSel  = document.getElementById('YEAR-SELECT');
+      var yearBox  = document.getElementById('YEAR-CONTROLS');
+      var rangeBox = document.getElementById('RANGE-CONTROLS');
+      var rFrom    = document.getElementById('RANGE-FROM');
+      var rTo      = document.getElementById('RANGE-TO');
+      var countEl  = document.getElementById('VOLCOUNT');
+      var noRes    = document.getElementById('NO-RESULTS');
+      var resetBtn = document.getElementById('VOLRESET');
+      var modes    = document.querySelectorAll('input[name="filtermode"]');
+
+      // Collect years and vol bounds from the data-* attributes.
+      var years = {}, minVol = Infinity, maxVol = -Infinity;
+      groups.forEach(function (g) {
+         var y = parseInt(g.getAttribute('data-year'), 10);
+         var v = parseInt(g.getAttribute('data-vol'),  10);
+         if (!isNaN(y)) years[y] = true;
+         if (!isNaN(v)) {
+            if (v < minVol) minVol = v;
+            if (v > maxVol) maxVol = v;
+         }
+      });
+
+      // Populate the year dropdown, newest first.
+      var yearList = Object.keys(years).map(Number).sort(function (a, b) { return b - a; });
+      yearList.forEach(function (y) {
+         var o = document.createElement('option');
+         o.value = String(y);
+         o.textContent = String(y);
+         yearSel.appendChild(o);
+      });
+
+      // Seed range inputs with the full known range as placeholders.
+      rFrom.placeholder = String(minVol);
+      rTo.placeholder   = String(maxVol);
+
+      function currentMode() {
+         for (var i = 0; i < modes.length; i++) if (modes[i].checked) return modes[i].value;
+         return 'all';
+      }
+
+      function setControlVisibility(mode) {
+         yearBox.classList.toggle('hidden-controls',  mode !== 'year');
+         rangeBox.classList.toggle('hidden-controls', mode !== 'range');
+      }
+
+      function apply() {
+         var mode = currentMode();
+         setControlVisibility(mode);
+
+         var selYear = parseInt(yearSel.value, 10);
+         var fromV   = parseInt(rFrom.value, 10); if (isNaN(fromV)) fromV = -Infinity;
+         var toV     = parseInt(rTo.value,   10); if (isNaN(toV))   toV   =  Infinity;
+         if (fromV > toV) { var t = fromV; fromV = toV; toV = t; }
+
+         var shown = 0;
+         groups.forEach(function (g) {
+            var y = parseInt(g.getAttribute('data-year'), 10);
+            var v = parseInt(g.getAttribute('data-vol'),  10);
+            var keep = true;
+            if (mode === 'year')  keep = (y === selYear);
+            if (mode === 'range') keep = (v >= fromV && v <= toV);
+            g.classList.toggle('filtered-out', !keep);
+            if (keep) shown++;
+         });
+
+         countEl.textContent = shown + ' of ' + groups.length + ' volumes shown';
+         noRes.style.display = (shown === 0) ? 'block' : 'none';
+      }
+
+      // Wire events.
+      modes.forEach(function (m) { m.addEventListener('change', apply); });
+      yearSel.addEventListener('change', function () {
+         // Auto-switch to "year" mode when user picks a year.
+         document.querySelector('input[name="filtermode"][value="year"]').checked = true;
+         apply();
+      });
+      [rFrom, rTo].forEach(function (el) {
+         el.addEventListener('input', function () {
+            document.querySelector('input[name="filtermode"][value="range"]').checked = true;
+            apply();
+         });
+      });
+      resetBtn.addEventListener('click', function () {
+         document.querySelector('input[name="filtermode"][value="all"]').checked = true;
+         yearSel.selectedIndex = 0;
+         rFrom.value = '';
+         rTo.value   = '';
+         apply();
+      });
+
+      apply();
+   })();
+   </script>
+  </body>
+</html>"""
+        return html
+
     def getVolume(self, number: int):
         """
         get my volume by volume number
