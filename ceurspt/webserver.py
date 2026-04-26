@@ -19,6 +19,7 @@ from fastapi.staticfiles import StaticFiles
 
 from ceurspt.bibtex import BibTexConverter
 from ceurspt.ceurws import Paper, PaperManager, Volume, VolumeManager
+from ceurspt.jsonldBuilder import CeurWsJsonLdBuilder
 
 
 class WebServer:
@@ -53,6 +54,17 @@ class WebServer:
         @self.app.get("/index.html")
         async def full_index_html():
             return await index_html(upper=None, lower=None)
+
+        @self.app.get("/index_alt.html")
+        async def full_index_html():
+            content = self.vm.index_alt_html()
+            return HTMLResponse(content)
+
+        @self.app.get("/Vol-{number:int}.jsonld")
+        async def volumeJsonLD(number: int, include_errors: bool = False):
+            volume = self.getVolume(number)
+            builder = CeurWsJsonLdBuilder.from_volume(volume, include_errors)
+            return builder.build()
 
         @self.app.get("/Vol-{number:int}/{pdf_name:str}.pdf")
         async def paperPdf(number: int, pdf_name: str):
