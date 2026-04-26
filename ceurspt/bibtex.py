@@ -72,7 +72,7 @@ class ProceedingsEntry:
         )
         proceeding = ProceedingsEntry(
             title=volume.title,
-            date=pub_date.date().isoformat(),
+            date=pub_date.date().isoformat() if pub_date else None,
             year=str(pub_date.year) if pub_date else None,
             url=record.get("spt.url"),
             eventtitle=record.get("wd.eventLabel", None),
