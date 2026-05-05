@@ -130,8 +130,13 @@ class Paper(ceurspt.ceurws_base.Paper):
         """
         wb create-entity '{"labels":{"en":"a label","fr":"un label"},"descriptions":{"en":"some description","fr":"une description"},"claims":{"P1775":["Q3576110","Q12206942"],"P2002":"bulgroz"}}'
         """
+        # Sanitize title for Wikibase: collapse any internal whitespace run
+        # (spaces, tabs, newlines, vertical whitespace) to a single space and
+        # strip leading/trailing whitespace. Wikibase rejects monolingual-text
+        # / label values with leading or trailing whitespace. See issue #24.
+        title = " ".join(self.title.split())
         wb = {
-            "labels": {"en": self.title},
+            "labels": {"en": title},
             "descriptions": {
                 "en": f"scientific paper published in CEUR-WS Volume {self.volume.number}"
             },
@@ -141,7 +146,7 @@ class Paper(ceurspt.ceurws_base.Paper):
                 #  P1433: published in
                 "P1433": self.volume.wikidataid,
                 # P1476:title
-                "P1476": {"text": self.title, "language": "en"},
+                "P1476": {"text": title, "language": "en"},
                 # P407 :language of work or name  Q1860:English
                 "P407": "Q1860",
                 #  P953 :full work available at URL
