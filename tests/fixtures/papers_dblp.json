@@ -1,0 +1,92 @@
+[
+  {
+    "dblp_publication_id": "https://dblp.org/rec/conf/nmr/MatosW22",
+    "dblp_proceeding_id": "https://dblp.org/rec/conf/nmr/2022",
+    "volume_number": 3197,
+    "title": "Repairing Ontologies via Kernel Pseudo-Contraction.",
+    "authors": [
+      {
+        "dblp_author_id": "https://dblp.org/pid/230/0984",
+        "label": "Vinícius Bitencourt Matos",
+        "wikidata_id": null,
+        "orcid_id": null,
+        "gnd_id": null
+      },
+      {
+        "dblp_author_id": "https://dblp.org/pid/w/RenataWassermann",
+        "label": "Renata Wassermann",
+        "wikidata_id": "Q62048937",
+        "orcid_id": "0000-0001-8065-1433",
+        "gnd_id": null
+      }
+    ],
+    "pdf_id": "Vol-3197/paper2"
+  },
+  {
+    "dblp_publication_id": "https://dblp.org/rec/conf/semweb/CarrieroGP22",
+    "dblp_proceeding_id": "https://dblp.org/rec/conf/semweb/2022wikidata",
+    "volume_number": 3262,
+    "title": "Towards improving Wikidata reuse with emerging patterns.",
+    "authors": [
+      {
+        "dblp_author_id": "https://dblp.org/pid/g/PTGroth",
+        "label": "Paul Groth",
+        "wikidata_id": "Q21678689",
+        "orcid_id": "0000-0003-0183-6910",
+        "gnd_id": "1026927129"
+      },
+      {
+        "dblp_author_id": "https://dblp.org/pid/238/0853",
+        "label": "Valentina Anita Carriero",
+        "wikidata_id": "Q95114811",
+        "orcid_id": "0000-0003-1427-3723",
+        "gnd_id": null
+      },
+      {
+        "dblp_author_id": "https://dblp.org/pid/24/2943",
+        "label": "Valentina Presutti",
+        "wikidata_id": "Q56459943",
+        "orcid_id": "0000-0002-9380-5160",
+        "gnd_id": "1052572707"
+      }
+    ],
+    "pdf_id": "Vol-3262/paper2"
+  },
+  {
+    "dblp_publication_id": "https://dblp.org/rec/conf/semweb/FerrantiPSA22",
+    "dblp_proceeding_id": "https://dblp.org/rec/conf/semweb/2022wikidata",
+    "volume_number": 3262,
+    "title": "Formalizing Property Constraints in Wikidata.",
+    "authors": [
+      {
+        "dblp_author_id": "https://dblp.org/pid/144/7445",
+        "label": "Shqiponja Ahmetaj",
+        "wikidata_id": "Q104507237",
+        "orcid_id": "0000-0003-3165-3568",
+        "gnd_id": null
+      },
+      {
+        "dblp_author_id": "https://dblp.org/pid/225/0568",
+        "label": "Nicolas Ferranti",
+        "wikidata_id": "Q112275836",
+        "orcid_id": "0000-0002-5574-1987",
+        "gnd_id": null
+      },
+      {
+        "dblp_author_id": "https://dblp.org/pid/99/6877",
+        "label": "Jairo Francisco de Souza",
+        "wikidata_id": "Q115055613",
+        "orcid_id": "0000-0002-0911-7980",
+        "gnd_id": null
+      },
+      {
+        "dblp_author_id": "https://dblp.org/pid/p/AxelPolleres",
+        "label": "Axel Polleres",
+        "wikidata_id": "Q54860587",
+        "orcid_id": "0000-0001-5670-1146",
+        "gnd_id": "136969569"
+      }
+    ],
+    "pdf_id": "Vol-3262/paper1"
+  }
+]
