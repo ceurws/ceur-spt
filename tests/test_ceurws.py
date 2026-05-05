@@ -182,10 +182,14 @@ class Test_CEURWS(BaseSptTest):
         """
         https://github.com/ceurws/ceur-spt/issues/22
         """
-        paper = self.pm.getPaper(3262, "paper1")
+        volume=3262
+        paperno="paper1"
+        paper = self.pm.getPaper(volume, paperno)
+        msg=f"paper {volume}/{paperno} not available in cache"
+        self.assertIsNotNone(paper, msg)
         markup = paper.as_smw_markup()
         debug = self.debug
-        # debug=True
+        debug=True
         if debug:
             print(markup)
         self.assertTrue(
