@@ -1,0 +1,38 @@
+# CITATION.cff for https://github.com/ceurws/ceur-spt
+# Generated following https://citation-file-format.github.io/
+cff-version: 1.2.0
+title: ceur-spt
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Wolfgang
+    family-names: Fahl
+    affiliation: BITPlan GmbH
+    orcid: 'https://orcid.org/0000-0002-0821-6995'
+  - given-names: Tim
+    family-names: Holzheim
+    orcid: 'https://orcid.org/0000-0003-2533-6363'
+  - alias: byzakyz
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.20037981
+    description: Concept DOI (all versions) on Zenodo
+repository-code: 'https://github.com/ceurws/ceur-spt'
+url: 'https://github.com/ceurws/ceur-spt'
+abstract: >-
+  RESTful Single Point of Truth server for CEUR Workshop
+  Proceedings (https://ceur-ws.org/), providing machine-readable
+  access to volumes, papers and enriched metadata from Wikidata
+  and DBLP.
+keywords:
+  - CEUR-WS
+  - Workshop Proceedings
+  - Single Point of Truth
+  - REST API
+  - Wikidata
+  - DBLP
+  - Scholarly Metadata
+  - FAIR
+license: Apache-2.0
