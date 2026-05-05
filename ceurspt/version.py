@@ -15,7 +15,7 @@ class Version(object):
     name = ""
     version = ceurspt.__version__
     date = "2023-03-17"
-    updated = "2026-04-16"
+    updated = "2026-05-05"
     description = ("CEUR-WS Single Point of Truth RestFUL server",)
 
     authors = "Tim Holzheim, Wolfgang Fahl"
@@ -24,7 +24,7 @@ class Version(object):
     chat_url = "https://github.com/ceurws/ceur-spt/discussions"
     cm_url = "https://github.com/ceurws/ceur-spt"
 
-    license = """Copyright 2023 contributors. All rights reserved.
+    license = """Copyright 2023-2026 contributors. All rights reserved.
 
   Licensed under the Apache License 2.0
   https://www.apache.org/licenses/LICENSE-2.0
