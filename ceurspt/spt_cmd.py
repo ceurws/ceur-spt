@@ -116,14 +116,23 @@ class CeurSptCmd:
             host = "localhost"  # host="127.0.0.1"
         return host
 
-    def recreate(self, args: Namespace):
+    def recreate(self, args: Namespace) -> int:
         """
-        recreate the caches
+        recreate the caches.
+
+        Fetches each lod from the remote base_url (prefer_local=False so
+        we actually refresh) and refuses to overwrite a good local cache
+        with an empty result. Returns the number of failed lods so the
+        caller can propagate a non-zero exit code.
 
         Args:
             args(Arguments): command line arguments
+
+        Returns:
+            int: number of lods that failed to refresh
         """
         jcm = JsonCacheManager(base_url=args.baseurl)
+        failed: list[str] = []
         for lod_name in [
             "volumes",
             "papers",
@@ -132,11 +141,37 @@ class CeurSptCmd:
             "papers_dblp",
         ]:
             profiler = Profiler(f"read {lod_name} ...", profile=True)
-            lod = jcm.load_lod(lod_name)
+            try:
+                # prefer_local=False: -rc means "refresh from remote"
+                lod = jcm.load_lod(lod_name, prefer_local=False)
+            except Exception as ex:
+                sys.stderr.write(
+                    f"ERROR: failed to fetch {lod_name}: {ex}\n"
+                )
+                failed.append(lod_name)
+                continue
             _elapsed = profiler.time(f" read {len(lod)} {lod_name}")
-            jcm.store(lod_name, lod)
+            if not lod:
+                sys.stderr.write(
+                    f"ERROR: remote returned empty lod for {lod_name}; "
+                    f"keeping existing local cache\n"
+                )
+                failed.append(lod_name)
+                continue
+            try:
+                jcm.store(lod_name, lod)
+            except Exception as ex:
+                sys.stderr.write(f"ERROR: failed to store {lod_name}: {ex}\n")
+                failed.append(lod_name)
+                continue
             profiler = Profiler(f"store {lod_name} ...", profile=True)
             _elapsed = profiler.time(f" store {len(lod)} {lod_name}")
+        if failed:
+            sys.stderr.write(
+                f"recreate finished with {len(failed)} failure(s): "
+                f"{', '.join(failed)}\n"
+            )
+        return len(failed)
 
     def start(self, args: Namespace):
         """
@@ -177,7 +212,9 @@ def main(argv=None):  # IGNORE:C0111
             print(f"see {Version.doc_url}")
             webbrowser.open(Version.doc_url)
         if args.recreate:
-            spt_cmd.recreate(args)
+            failed = spt_cmd.recreate(args)
+            if failed:
+                return 3
         elif args.serve:
             spt_cmd.start(args)
 

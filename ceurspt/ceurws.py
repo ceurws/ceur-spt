@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import typing
+import urllib.error
 import urllib.request
 from datetime import datetime
 from html import escape
@@ -971,48 +972,107 @@ class JsonCacheManager:
         json_path = f"{root_path}/{lod_name}.json"
         return json_path
 
-    def load_lod(self, lod_name: str) -> list:
+    # minimum byte size for a cache file to be considered non-empty.
+    # `[]` is 2 bytes, `{}` is 2 bytes, `[{}]` is 4 bytes — anything below
+    # this threshold is treated as a corrupt/empty cache.
+    MIN_VALID_BYTES = 8
+
+    def _is_valid_local(self, json_path: str) -> bool:
         """
-        load my list of dicts
+        Check whether a local cache file exists and is non-empty enough
+        to be trusted (guards against previously-written `[]` corruption).
+        """
+        if not os.path.isfile(json_path):
+            return False
+        try:
+            return os.path.getsize(json_path) >= self.MIN_VALID_BYTES
+        except OSError:
+            return False
+
+    def _fetch_remote(self, lod_name: str) -> list:
+        """
+        fetch a list of dicts from the remote base_url, validating HTTP
+        status and payload shape. Raises on 5xx, non-200, or empty body.
+        """
+        url = f"{self.base_url}/{lod_name}.json"
+        try:
+            with urllib.request.urlopen(url, timeout=60) as source:
+                status = getattr(source, "status", 200)
+                if status != 200:
+                    raise Exception(
+                        f"HTTP {status} fetching {lod_name} from {url}"
+                    )
+                json_str = source.read()
+        except urllib.error.HTTPError as ex:
+            raise Exception(
+                f"HTTP {ex.code} fetching {lod_name} from {url}: {ex.reason}"
+            )
+        except Exception as ex:
+            raise Exception(f"Could not read {lod_name} from {url} due to {ex}")
+        if not json_str or len(json_str) < self.MIN_VALID_BYTES:
+            raise Exception(
+                f"Remote {url} returned empty/too-small payload "
+                f"({len(json_str) if json_str else 0} bytes) — refusing to use"
+            )
+        try:
+            lod = orjson.loads(json_str)
+        except Exception as ex:
+            raise Exception(f"Invalid JSON from {url}: {ex}")
+        return lod
+
+    def load_lod(self, lod_name: str, prefer_local: bool = True) -> list:
+        """
+        load my list of dicts.
+
+        Prefers a valid non-empty local cache file; otherwise fetches
+        from the remote base_url. A local file that is missing or too
+        small (e.g. a previously-written `[]`) is ignored and the
+        remote is used instead.
 
         Args:
             lod_name(str): the name of the list of dicts cache to read
+            prefer_local(bool): if True, use local file when valid
 
         Returns:
             list: the list of dicts
         """
         json_path = self.json_path(lod_name)
-        if os.path.isfile(json_path):
+        if prefer_local and self._is_valid_local(json_path):
             try:
                 with open(json_path, encoding="utf-8") as json_file:
                     json_str = json_file.read()
-                    lod = orjson.loads(json_str)
+                    return orjson.loads(json_str)
             except Exception as ex:
-                msg = f"Could not read {lod_name} from {json_path} due to {str(ex)}"
-                raise Exception(msg)
-        else:
-            try:
-                url = f"{self.base_url}/{lod_name}.json"
-                with urllib.request.urlopen(url) as source:
-                    json_str = source.read()
-                    lod = orjson.loads(json_str)
-            except Exception as ex:
-                msg = f"Could not read {lod_name} from {url} due to {str(ex)}"
-                raise Exception(msg)
-        return lod
+                # fall through to remote on local read error
+                logging.warning(
+                    f"Local cache {json_path} unreadable ({ex}); "
+                    f"falling back to remote"
+                )
+        return self._fetch_remote(lod_name)
 
-    def store(self, lod_name: str, lod: list):
+    def store(self, lod_name: str, lod: list, allow_empty: bool = False):
         """
-        store my list of dicts
+        store my list of dicts.
+
+        Refuses to overwrite an existing non-empty cache file with an
+        empty lod unless ``allow_empty=True`` is set. This guards
+        against `ceur-spt -rc` clobbering a good cache when the
+        upstream returned a 5xx or an empty response.
 
         Args:
             lod_name(str): the name of the list of dicts cache to write
             lod(list): the list of dicts to write
+            allow_empty(bool): permit writing an empty lod over an
+                existing non-empty cache
         """
-        with open(self.json_path(lod_name), "wb") as json_file:
-            json_str = orjson.dumps(lod)
-            json_file.write(json_str)
-            pass
+        json_path = self.json_path(lod_name)
+        if not lod and not allow_empty and self._is_valid_local(json_path):
+            raise Exception(
+                f"Refusing to overwrite non-empty {json_path} with empty "
+                f"lod for {lod_name} (pass allow_empty=True to force)"
+            )
+        with open(json_path, "wb") as json_file:
+            json_file.write(orjson.dumps(lod))
 
 
 class VolumeManager(JsonCacheManager):
