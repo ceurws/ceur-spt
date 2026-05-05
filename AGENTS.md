@@ -124,6 +124,21 @@ tests/
 - Use `Profiler` for timing tests
 - Place test files in `tests/test_*.py`
 
+## Local Cache & Test Fixtures
+
+DO NOT poke around searching for data sources. The authoritative locations are:
+
+- **Local JSON cache**: `~/.ceurws/` (managed by `JsonCacheManager` in `ceurspt/ceurws.py:960`).
+  Contains full `volumes.json`, `papers.json`, `proceedings.json`,
+  `authors_dblp.json`, `papers_dblp.json` — the same file names used in fixtures.
+- **Test fixtures**: `tests/fixtures/*.json` — a curated subset of the local cache
+  used by `BaseSptTest` (`tests/base_spt_test.py`) via a monkey-patch of
+  `JsonCacheManager.json_path`. Tests are hermetic: no HTTP calls.
+
+**Workflow for adding a missing volume/paper to fixtures**: copy the
+record from the corresponding `~/.ceurws/<name>.json` into
+`tests/fixtures/<name>.json`. Never fabricate fixture data.
+
 ## Dependencies
 - `fastapi[all]`, `uvicorn` - Web framework
 - `linkml-runtime` - Schema handling
