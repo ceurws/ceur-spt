@@ -12,10 +12,10 @@ class Version(object):
     Version handling for VolumeBrowser
     """
 
-    name = ""
+    name = "CEUR-WS single point of truth server"
     version = ceurspt.__version__
     date = "2023-03-17"
-    updated = "2026-05-05"
+    updated = "2026-05-07"
     description = ("CEUR-WS Single Point of Truth RestFUL server",)
 
     authors = "Tim Holzheim, Wolfgang Fahl"

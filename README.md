@@ -40,3 +40,37 @@ https://ceur-ws.org/
 ### Single Point of Truth
 - http://ceurspt.wikidata.dbis.rwth-aachen.de/index.html
 - http://ceurspt.wikidata.dbis.rwth-aachen.de/docs
+
+## Installation
+```
+pipx install pyCEURspt
+```
+## Usage
+### Command Line
+```
+usage: ceur-spt [-h] [-a] [-b BASEPATH] [-bu BASEURL] [-d] [-rc] [-v] [--host HOST] [--port PORT] [-s] [-V]
+
+Copyright 2023-2026 contributors. All rights reserved.
+
+  Licensed under the Apache License 2.0
+  https://www.apache.org/licenses/LICENSE-2.0
+
+  Distributed on an "AS IS" basis without warranties
+  or conditions of any kind, either express or implied.
+
+options:
+  -h, --help            show this help message and exit
+  -a, --about           show about info [default: False]
+  -b BASEPATH, --basepath BASEPATH
+                        the base path to the ceur-ws volumes [default:
+                        /Users/wf/.local/pipx/venvs/pyceurspt/lib/python3.12/site-packages/ceur-ws]
+  -bu BASEURL, --baseurl BASEURL
+                        the base url to use for the RESTFul metadata service [default: http://cvb.bitplan.com]
+  -d, --debug           show debug info [default: False]
+  -rc, --recreate       reload caches e.g. volume table
+  -v, --verbose         show verbose infos e.g. on startup [default: False]
+  --host HOST           the host to serve / listen from [default: localhost]
+  --port PORT           the port to serve from [default: 9990]
+  -s, --serve           start webserver [default: False]
+  -V, --version         show program's version number and exit
+```
